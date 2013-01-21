@@ -3,10 +3,10 @@
  */
 package com.google.code.morphia.validation;
 
-import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.Email;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Id;
 
 /**

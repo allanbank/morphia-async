@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
+import com.allanbank.mongodb.MongoClient;
+import com.allanbank.mongodb.MongoFactory;
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.mapping.Mapper;
@@ -30,32 +33,32 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
 /**
- *
+ * 
  * @author Olafur Gauti Gudmundsson
  * @author Scott Hernandez
  **/
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class Morphia {
-	private final Mapper mapper;
+    private final Mapper mapper;
 
-	public Morphia() {
+    public Morphia() {
         this(Collections.EMPTY_SET);
     }
 
-	public Morphia( Set<Class> classesToMap ) {
+    public Morphia(Set<Class> classesToMap) {
         this.mapper = new Mapper();
         for (Class c : classesToMap) {
             map(c);
         }
     }
-	
+
     public synchronized Morphia map(Class... entityClasses) {
-    	if ( entityClasses != null && entityClasses.length > 0)
-    		for(Class entityClass : entityClasses) {
-		        if ( !mapper.isMapped(entityClass) ) {
-		            mapper.addMappedClass(entityClass);
-		        }
-        }
+        if (entityClasses != null && entityClasses.length > 0)
+            for (Class entityClass : entityClasses) {
+                if (!mapper.isMapped(entityClass)) {
+                    mapper.addMappedClass(entityClass);
+                }
+            }
         return this;
     }
 
@@ -64,8 +67,9 @@ public class Morphia {
     }
 
     /**
-     * Tries to map all classes in the package specified. Fails if one of the classes is not valid for mapping.
-     *
+     * Tries to map all classes in the package specified. Fails if one of the
+     * classes is not valid for mapping.
+     * 
      * @param packageName
      *            the name of the package to process
      * @return the Morphia instance
@@ -76,39 +80,50 @@ public class Morphia {
 
     /**
      * Tries to map all classes in the package specified.
-     *
+     * 
      * @param packageName
      *            the name of the package to process
      * @param ignoreInvalidClasses
-     *            specifies whether to ignore classes in the package that cannot be mapped
+     *            specifies whether to ignore classes in the package that cannot
+     *            be mapped
      * @return the Morphia instance
      */
-    public synchronized Morphia mapPackage(String packageName, boolean ignoreInvalidClasses) {
+    public synchronized Morphia mapPackage(String packageName,
+            boolean ignoreInvalidClasses) {
         try {
             for (Class c : ReflectionUtils.getClasses(packageName)) {
                 try {
-                    Embedded embeddedAnn = ReflectionUtils.getClassEmbeddedAnnotation(c);
-                    Entity enityAnn = ReflectionUtils.getClassEntityAnnotation(c);
-                    if ( enityAnn != null || embeddedAnn != null ) {
+                    Embedded embeddedAnn = ReflectionUtils
+                            .getClassEmbeddedAnnotation(c);
+                    Entity enityAnn = ReflectionUtils
+                            .getClassEntityAnnotation(c);
+                    if (enityAnn != null || embeddedAnn != null) {
                         map(c);
                     }
-                } catch (MappingException ex) {
+                }
+                catch (MappingException ex) {
                     if (!ignoreInvalidClasses) {
                         throw ex;
                     }
                 }
             }
             return this;
-        } catch (IOException ioex) {
-            throw new MappingException("Could not get map classes from package " + packageName, ioex);
-        } catch (ClassNotFoundException cnfex) {
-            throw new MappingException("Could not get map classes from package " + packageName, cnfex);
+        }
+        catch (IOException ioex) {
+            throw new MappingException(
+                    "Could not get map classes from package " + packageName,
+                    ioex);
+        }
+        catch (ClassNotFoundException cnfex) {
+            throw new MappingException(
+                    "Could not get map classes from package " + packageName,
+                    cnfex);
         }
     }
 
     /**
      * Check whether a specific class is mapped by this instance.
-     *
+     * 
      * @param entityClass
      *            the class we want to check
      * @return true if the class is mapped, else false
@@ -117,51 +132,71 @@ public class Morphia {
         return mapper.isMapped(entityClass);
     }
 
-	public <T> T fromDBObject(Class<T> entityClass, DBObject dbObject) {
-		return fromDBObject(entityClass, dbObject, mapper.createEntityCache());
-	}
-	
-	public <T> T fromDBObject(Class<T> entityClass, DBObject dbObject, EntityCache cache) {
-        if ( !entityClass.isInterface() && !mapper.isMapped(entityClass)) {
-            throw new MappingException("Trying to map to an unmapped class: " + entityClass.getName());
+    public <T> T fromDBObject(Class<T> entityClass, Document dbObject) {
+        return fromDBObject(entityClass, dbObject, mapper.createEntityCache());
+    }
+
+    public <T> T fromDBObject(Class<T> entityClass, Document dbObject,
+            EntityCache cache) {
+        if (!entityClass.isInterface() && !mapper.isMapped(entityClass)) {
+            throw new MappingException("Trying to map to an unmapped class: "
+                    + entityClass.getName());
         }
         try {
-			return (T) mapper.fromDBObject(entityClass, dbObject, cache);
-        } catch ( Exception e ) {
-            throw new MappingException("Could not map entity from DBObject", e); }
+            return (T) mapper.fromDBObject(entityClass, dbObject, cache);
+        }
+        catch (Exception e) {
+            throw new MappingException("Could not map entity from DBObject", e);
+        }
     }
 
-    public DBObject toDBObject( Object entity ) {
+    public Document toDBObject(Object entity) {
         try {
             return mapper.toDBObject(entity);
-        } catch ( Exception e ) {
-            throw new MappingException("Could not map entity to DBObject", e); }
+        }
+        catch (Exception e) {
+            throw new MappingException("Could not map entity to DBObject", e);
+        }
     }
 
-    public Mapper getMapper() { return this.mapper; }
-
-    /** This will create a new Mongo instance; it is best to use a Mongo singleton instance */
-    @Deprecated public Datastore createDatastore(String dbName) { 
-    	return createDatastore(dbName, null, null);
-	}
-    
-    /** This will create a new Mongo instance; it is best to use a Mongo singleton instance*/
-    @Deprecated public Datastore createDatastore(String dbName, String user, char[] pw) {
-    	try {
-			return createDatastore(new Mongo(), dbName, user, pw);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+    public Mapper getMapper() {
+        return this.mapper;
     }
 
-    /** It is best to use a Mongo singleton instance here**/
-    public Datastore createDatastore(Mongo mon, String dbName, String user, char[] pw) {
-    	return new DatastoreImpl(this, mon, dbName, user, pw);
+    /**
+     * This will create a new MongoClient instance; it is best to use a
+     * MongoClient singleton instance
+     */
+    @Deprecated
+    public Datastore createDatastore(String dbName) {
+        return createDatastore(dbName, null, null);
     }
 
-    /** It is best to use a Mongo singleton instance here**/
-	public Datastore createDatastore(Mongo mongo, String dbName) {
-		return createDatastore(mongo, dbName, null, null);
-	}
-	
+    /**
+     * This will create a new MongoClient instance; it is best to use a
+     * MongoClient singleton instance
+     */
+    @Deprecated
+    public Datastore createDatastore(String dbName, String user, char[] pw) {
+        try {
+            return createDatastore(
+                    MongoFactory.createClient("mongodb://localhost:27017"),
+                    dbName, user, pw);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** It is best to use a MongoClient singleton instance here **/
+    public Datastore createDatastore(MongoClient mon, String dbName,
+            String user, char[] pw) {
+        return new DatastoreImpl(this, mon, dbName, user, pw);
+    }
+
+    /** It is best to use a MongoClient singleton instance here **/
+    public Datastore createDatastore(MongoClient mongo, String dbName) {
+        return createDatastore(mongo, dbName, null, null);
+    }
+
 }

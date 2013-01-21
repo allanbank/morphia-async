@@ -9,10 +9,10 @@ import javax.validation.Configuration;
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.AbstractEntityInterceptor;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.mapping.Mapper;
-import com.mongodb.DBObject;
 
 /**
  * @author us@thomas-daily.de
@@ -37,7 +37,7 @@ public class ValidationExtension extends AbstractEntityInterceptor
     }
 
     @Override
-    public void prePersist(final Object ent, final DBObject dbObj, final Mapper mapr)
+    public void prePersist(final Object ent, final Document dbObj, final Mapper mapr)
     {
         final Set validate = this.validationFactory.getValidator().validate(ent);
         if (!validate.isEmpty())
