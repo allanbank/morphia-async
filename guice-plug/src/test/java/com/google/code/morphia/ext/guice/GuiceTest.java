@@ -9,9 +9,9 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.Key;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;

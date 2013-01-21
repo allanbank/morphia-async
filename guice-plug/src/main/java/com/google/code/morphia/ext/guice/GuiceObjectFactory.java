@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.ObjectFactory;
 import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.utils.Assert;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.mongodb.DBObject;
 
 /**
  * @author us@thomas-daily.de
@@ -54,7 +54,7 @@ public class GuiceObjectFactory implements ObjectFactory {
 		return false;
 	}
 	
-	public Object createInstance(final Class clazz, final DBObject dbObj) {
+	public Object createInstance(final Class clazz, final Document dbObj) {
 		if (injectOnConstructor(clazz)) {
 			return this.injector.getInstance(clazz);
 		}
@@ -62,7 +62,7 @@ public class GuiceObjectFactory implements ObjectFactory {
 		return injectMembers(this.delegate.createInstance(clazz, dbObj));
 	}
 	
-	public Object createInstance(final Mapper mapr, final MappedField mf, final DBObject dbObj) {
+	public Object createInstance(final Mapper mapr, final MappedField mf, final Document dbObj) {
 		final Class clazz = mf.getType();
 		if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
 			// there is no good way to find the clazz to use, yet, so delegate
