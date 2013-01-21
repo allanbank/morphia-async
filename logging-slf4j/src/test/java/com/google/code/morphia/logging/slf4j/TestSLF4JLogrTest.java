@@ -8,11 +8,11 @@ import java.io.PrintStream;
 
 import junit.framework.Assert;
 
-import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.Key;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
@@ -20,10 +20,8 @@ import com.google.code.morphia.logging.MorphiaLoggerFactory;
 /**
  * @author us@thomas-daily.de
  */
-public class TestSLF4JLogrTest extends TestBase
-{
-    public static class E
-    {
+public class TestSLF4JLogrTest extends TestBase {
+    public static class E {
         @Id
         ObjectId id;
 
@@ -35,8 +33,7 @@ public class TestSLF4JLogrTest extends TestBase
 
     @Before
     @Override
-    public void setUp()
-    {
+    public void setUp() {
         this.oldErr = System.err;
         this.baos = new ByteArrayOutputStream();
         System.setErr(new PrintStream(this.baos));
@@ -47,14 +44,12 @@ public class TestSLF4JLogrTest extends TestBase
     }
 
     @After
-    public void tearDown()
-    {
+    public void tearDown() {
         System.setErr(this.oldErr);
     }
 
     @Test
-    public final void testWarningString()
-    {
+    public final void testWarningString() {
 
         final Key<E> e = this.ds.save(new E());
         // string type where int expected
