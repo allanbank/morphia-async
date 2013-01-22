@@ -29,8 +29,6 @@ import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.mapping.MappingException;
 import com.google.code.morphia.mapping.cache.EntityCache;
 import com.google.code.morphia.utils.ReflectionUtils;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 
 /**
  * 

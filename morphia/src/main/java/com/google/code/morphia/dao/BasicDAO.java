@@ -4,6 +4,9 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.allanbank.mongodb.Durability;
+import com.allanbank.mongodb.MongoClient;
+import com.allanbank.mongodb.MongoCollection;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.DatastoreImpl;
 import com.google.code.morphia.Key;
@@ -27,7 +30,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 	protected Class<T> entityClazz;
 	protected DatastoreImpl ds;
 	
-	public BasicDAO(Class<T> entityClass, Mongo mongo, Morphia morphia, String dbName) {
+	public BasicDAO(Class<T> entityClass, MongoClient mongo, Morphia morphia, String dbName) {
 		initDS(mongo, morphia, dbName);
 		initType(entityClass);
 	}
@@ -43,7 +46,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 	 * {@code class MyDao extends DAO<MyEntity, String>}
 	 * </p>
 	 * */
-	protected BasicDAO(Mongo mongo, Morphia morphia, String dbName) {
+	protected BasicDAO(MongoClient mongo, Morphia morphia, String dbName) {
 		initDS(mongo, morphia, dbName);
 		initType(((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]));
 	}
@@ -58,7 +61,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 		ds.getMapper().addMappedClass(type);
 	}
 	
-	protected void initDS(Mongo mon, Morphia mor, String db) {
+	protected void initDS(MongoClient mon, Morphia mor, String db) {
 		ds = new DatastoreImpl(mor, mon, db);
 	}
 	
@@ -76,7 +79,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 	}
 	
 	/** The underlying collection for this DAO */
-	public DBCollection getCollection() {
+	public MongoCollection getCollection() {
 		return ds.getCollection(entityClazz);
 	}
 
@@ -112,7 +115,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 	/* (non-Javadoc)
 	 * @see com.google.code.morphia.DAO#save(T, com.mongodb.WriteConcern)
 	 */
-	public Key<T> save(T entity, WriteConcern wc) {
+	public Key<T> save(T entity, Durability wc) {
 		return ds.save(entity, wc);
 	}
 	/* (non-Javadoc)
@@ -132,28 +135,28 @@ public class BasicDAO<T, K> implements DAO<T, K> {
 	/* (non-Javadoc)
 	 * @see com.google.code.morphia.DAO#delete(T)
 	 */
-	public WriteResult delete(T entity) {
+	public long delete(T entity) {
 		return ds.delete(entity);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.google.code.morphia.DAO#delete(T, com.mongodb.WriteConcern)
 	 */
-	public WriteResult delete(T entity, WriteConcern wc) {
+	public long delete(T entity, Durability wc) {
 		return ds.delete(entity, wc);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.google.code.morphia.DAO#deleteById(K)
 	 */
-	public WriteResult deleteById(K id) {
+	public long deleteById(K id) {
 		return ds.delete(entityClazz, id);
 	}
 	
 	/* (non-Javadoc)
 	 * @see com.google.code.morphia.DAO#deleteByQuery(com.google.code.morphia.query.Query)
 	 */
-	public WriteResult deleteByQuery(Query<T> q) {
+	public long deleteByQuery(Query<T> q) {
 		return ds.delete(q);
 	}
 	

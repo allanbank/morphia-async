@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.allanbank.mongodb.bson.Document;
+import com.allanbank.mongodb.bson.Element;
+import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.annotations.AlsoLoad;
 import com.google.code.morphia.annotations.ConstructorArgs;
 import com.google.code.morphia.annotations.Embedded;
@@ -30,7 +33,6 @@ import com.google.code.morphia.annotations.Version;
 import com.google.code.morphia.logging.Logr;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
 import com.google.code.morphia.utils.ReflectionUtils;
-import com.mongodb.DBObject;
 
 /**
  * Represents the mapping of this field to/from mongodb (name, list<annotation>)
@@ -229,11 +231,11 @@ public class MappedField {
 	}
 	
 	/** @return the value of this field mapped from the DBObject */
-	public String getFirstFieldName(DBObject dbObj) {
+	public String getFirstFieldName(Document dbObj) {
 		String fieldName = getNameToStore();
 		boolean foundField = false;
 		for (String n : getLoadNames()) {
-			if (dbObj.containsField(n))
+			if (dbObj.get(n) != null)
 				if (!foundField) {
 					foundField = true;
 					fieldName = n;
@@ -244,7 +246,7 @@ public class MappedField {
 	}
 	
 	/** @return the value from best mapping of this field*/
-	public Object getDbObjectValue(DBObject dbObj) {
+	public Element getDbObjectValue(Document dbObj) {
 		return dbObj.get(getFirstFieldName(dbObj));
 	}
 	

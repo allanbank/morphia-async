@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.EntityInterceptor;
 import com.google.code.morphia.annotations.Converters;
 import com.google.code.morphia.annotations.Embedded;
@@ -302,9 +303,9 @@ public class MappedClass {
 	}
 	
 	/** Call the lifcycle methods */
-	public DBObject callLifecycleMethods(Class<? extends Annotation> event, Object entity, DBObject dbObj, Mapper mapr) {
+	public DocumentBuilder callLifecycleMethods(Class<? extends Annotation> event, Object entity, DocumentBuilder dbObj, Mapper mapr) {
 		List<ClassMethodPair> methodPairs = getLifecycleMethods((Class<Annotation>)event);
-		DBObject retDbObj = dbObj;
+		DocumentBuilder retDbObj = dbObj;
 		try
 		{
 			Object tempObj = null;
@@ -340,7 +341,7 @@ public class MappedClass {
 							tempObj = method.invoke(inst, entity, retDbObj);
 					
 					if (tempObj != null)
-						retDbObj = (DBObject) tempObj;
+						retDbObj = (DocumentBuilder) tempObj;
 				}
 			}
 
@@ -365,7 +366,7 @@ public class MappedClass {
 		return o;
 			
 	}
-	private void callGlobalInterceptors(Class<? extends Annotation> event, Object entity, DBObject dbObj, Mapper mapr,
+	private void callGlobalInterceptors(Class<? extends Annotation> event, Object entity, DocumentBuilder dbObj, Mapper mapr,
 			Collection<EntityInterceptor> interceptors) {
 		for (EntityInterceptor ei : interceptors) {
 			if (log.isDebugEnabled())

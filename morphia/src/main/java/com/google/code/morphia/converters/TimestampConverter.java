@@ -6,29 +6,34 @@ package com.google.code.morphia.converters;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import com.allanbank.mongodb.bson.Element;
+import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
  * @author scotthernandez
  */
-@SuppressWarnings({"rawtypes"})
-public class TimestampConverter extends DateConverter implements SimpleValueConverter{
-	
-	public TimestampConverter() { super(Timestamp.class); };
-	
-	@Override
-	public
-	Object decode(Class targetClass, Object val, MappedField optionalExtraInfo) throws MappingException {
-		Date d = (Date) super.decode(targetClass, val, optionalExtraInfo);
-		return new Timestamp(d.getTime());
-	}
+@SuppressWarnings({ "rawtypes" })
+public class TimestampConverter extends DateConverter {
 
-	@Override
-	public Object encode(Object val, MappedField optionalExtraInfo) {
-		if (val == null) 
-			return null;
-		return new Date(((Timestamp)val).getTime());
-	}
-	
+    /**
+     * Creates a new TimestampConverter.
+     */
+    public TimestampConverter() {
+        super(Timestamp.class);
+    }
+
+    @Override
+    public Timestamp decode(Class targetClass, Element val,
+            MappedField optionalExtraInfo) throws MappingException {
+        Date d = super.decode(targetClass, val, optionalExtraInfo);
+        return new Timestamp(d.getTime());
+    }
+
+    @Override
+    public void encode(DocumentBuilder builder, String name, Date val,
+            MappedField optionalExtraInfo) {
+        super.encode(builder, name, val, optionalExtraInfo);
+    }
 }
