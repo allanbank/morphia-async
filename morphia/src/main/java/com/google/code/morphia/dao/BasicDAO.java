@@ -15,10 +15,6 @@ import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.QueryResults;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
 
 /**
  * @author Olafur Gauti Gudmundsson

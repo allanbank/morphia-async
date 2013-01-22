@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.allanbank.mongodb.Durability;
-import com.allanbank.mongodb.Mongo;
 import com.allanbank.mongodb.MongoClient;
 import com.allanbank.mongodb.MongoCollection;
 import com.allanbank.mongodb.MongoDatabase;
+import com.allanbank.mongodb.bson.Document;
 import com.allanbank.mongodb.bson.DocumentReference;
 import com.allanbank.mongodb.bson.builder.BuilderFactory;
 import com.allanbank.mongodb.builder.MapReduce.OutputType;
@@ -56,6 +56,8 @@ import com.google.code.morphia.utils.IndexFieldDef;
  */
 @SuppressWarnings({ "unchecked", "deprecation" })
 public class DatastoreImpl implements Datastore, AdvancedDatastore {
+    public static final Document ALL = BuilderFactory.start().build();
+
     private static final Logr log = MorphiaLoggerFactory
             .get(DatastoreImpl.class);
 
@@ -131,22 +133,20 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     public <T> long delete(String kind, T id) {
         MongoCollection dbColl = getCollection(kind);
-        WriteResult wr = dbColl.remove(BasicDBObjectBuilder.start()
-                .add(Mapper.ID_KEY, id).get());
-        throwOnError(null, wr);
-        return wr;
+        return dbColl.delete(BuilderFactory.start().add(Mapper.ID_KEY, id)
+                .build());
     }
 
     public <T, V> long delete(String kind, Class<T> clazz, V id) {
         return delete(find(kind, clazz).filter(Mapper.ID_KEY, id));
     }
 
-    public <T, V> long delete(Class<T> clazz, V id, WriteConcern wc) {
+    public <T, V> long delete(Class<T> clazz, V id, Durability wc) {
         return delete(createQuery(clazz).filter(Mapper.ID_KEY, id), wc);
     }
 
     public <T, V> long delete(Class<T> clazz, V id) {
-        return delete(clazz, id, getWriteConcern(clazz));
+        return delete(clazz, id, getDurability(clazz));
     }
 
     public <T, V> long delete(Class<T> clazz, Iterable<V> ids) {
@@ -156,10 +156,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     public <T> long delete(T entity) {
-        return delete(entity, getWriteConcern(entity));
+        return delete(entity, getDurability(entity));
     }
 
-    public <T> long delete(T entity, WriteConcern wc) {
+    public <T> long delete(T entity, Durability wc) {
         entity = ProxyHelper.unwrap(entity);
         if (entity instanceof Class<?>)
             throw new MappingException(
@@ -175,10 +175,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     public <T> long delete(Query<T> query) {
-        return delete(query, getWriteConcern(query.getEntityClass()));
+        return delete(query, getDurability(query.getEntityClass()));
     }
 
-    public <T> long delete(Query<T> query, WriteConcern wc) {
+    public <T> long delete(Query<T> query, Durability wc) {
         QueryImpl<T> q = (QueryImpl<T>) query;
 
         MongoCollection dbColl = q.getCollection();
@@ -186,7 +186,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         if (dbColl == null)
             dbColl = getCollection(q.getEntityClass());
 
-        WriteResult wr;
+        long wr;
 
         if (q.getSortObject() != null || q.getOffset() != 0 || q.getLimit() > 0)
             throw new QueryException(
@@ -194,15 +194,13 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
         if (q.getQueryObject() != null)
             if (wc == null)
-                wr = dbColl.remove(q.getQueryObject());
+                wr = dbColl.delete(q.getQueryObject());
             else
-                wr = dbColl.remove(q.getQueryObject(), wc);
+                wr = dbColl.delete(q.getQueryObject(), wc);
         else if (wc == null)
-            wr = dbColl.remove(new BasicDBObject());
+            wr = dbColl.delete(ALL);
         else
-            wr = dbColl.remove(new BasicDBObject(), wc);
-
-        throwOnError(wc, wr);
+            wr = dbColl.delete(ALL, wc);
 
         return wr;
     }
@@ -231,7 +229,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     protected <T> void ensureIndex(Class<T> clazz, String name,
-            BasicDBObject fields, boolean unique, boolean dropDupsOnCreate,
+            Document fields, boolean unique, boolean dropDupsOnCreate,
             boolean background, boolean sparse) {
         BasicDBObjectBuilder keyOpts = new BasicDBObjectBuilder();
         if (name != null && name.length() > 0) {
@@ -314,7 +312,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
                 if (idx != null && idx.value() != null
                         && idx.value().length > 0)
                     for (Index index : idx.value()) {
-                        BasicDBObject fields = QueryImpl.parseFieldsString(
+                        Document fields = QueryImpl.parseFieldsString(
                                 index.value(), mc.getClazz(), mapr,
                                 !index.disableValidation());
                         ensureIndex(mc.getClazz(), index.name(), fields,
@@ -668,28 +666,28 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     public <T> Iterable<Key<T>> insert(Iterable<T> entities) {
         // TODO: try not to create two iterators...
         Object first = entities.iterator().next();
-        return insert(entities, getWriteConcern(first));
+        return insert(entities, getDurability(first));
     }
 
     public <T> Iterable<Key<T>> insert(String kind, Iterable<T> entities,
-            WriteConcern wc) {
+            Durability wc) {
         MongoCollection dbColl = db.getCollection(kind);
         return insert(dbColl, entities, wc);
     }
 
     public <T> Iterable<Key<T>> insert(String kind, Iterable<T> entities) {
-        return insert(kind, entities, getWriteConcern(entities.iterator()
+        return insert(kind, entities, getDurability(entities.iterator()
                 .next()));
     }
 
-    public <T> Iterable<Key<T>> insert(Iterable<T> entities, WriteConcern wc) {
+    public <T> Iterable<Key<T>> insert(Iterable<T> entities, Durability wc) {
         // TODO: Do this without creating another iterator
         MongoCollection dbColl = getCollection(entities.iterator().next());
         return insert(dbColl, entities, wc);
     }
 
     private <T> Iterable<Key<T>> insert(MongoCollection dbColl,
-            Iterable<T> entities, WriteConcern wc) {
+            Iterable<T> entities, Durability wc) {
         ArrayList<DBObject> ents = entities instanceof List ? new ArrayList<DBObject>(
                 ((List<T>) entities).size()) : new ArrayList<DBObject>();
 
@@ -726,14 +724,14 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     public <T> Iterable<Key<T>> insert(T... entities) {
-        return insert(Arrays.asList(entities), getWriteConcern(entities[0]));
+        return insert(Arrays.asList(entities), getDurability(entities[0]));
     }
 
     public <T> Key<T> insert(T entity) {
-        return insert(entity, getWriteConcern(entity));
+        return insert(entity, getDurability(entity));
     }
 
-    public <T> Key<T> insert(T entity, WriteConcern wc) {
+    public <T> Key<T> insert(T entity, Durability wc) {
         entity = ProxyHelper.unwrap(entity);
         MongoCollection dbColl = getCollection(entity);
         return insert(dbColl, entity, wc);
@@ -742,17 +740,17 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     public <T> Key<T> insert(String kind, T entity) {
         entity = ProxyHelper.unwrap(entity);
         MongoCollection dbColl = getCollection(kind);
-        return insert(dbColl, entity, getWriteConcern(entity));
+        return insert(dbColl, entity, getDurability(entity));
     }
 
-    public <T> Key<T> insert(String kind, T entity, WriteConcern wc) {
+    public <T> Key<T> insert(String kind, T entity, Durability wc) {
         entity = ProxyHelper.unwrap(entity);
         MongoCollection dbColl = getCollection(kind);
         return insert(dbColl, entity, wc);
     }
 
     protected <T> Key<T> insert(MongoCollection dbColl, T entity,
-            WriteConcern wc) {
+            Durability wc) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = entityToDBObj(entity, involvedObjects);
         WriteResult wr;
@@ -795,10 +793,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         catch (Exception e) {
             // do nothing
         }
-        return save(entities, getWriteConcern(first));
+        return save(entities, getDurability(first));
     }
 
-    public <T> Iterable<Key<T>> save(Iterable<T> entities, WriteConcern wc) {
+    public <T> Iterable<Key<T>> save(Iterable<T> entities, Durability wc) {
         ArrayList<Key<T>> savedKeys = new ArrayList<Key<T>>();
         for (T ent : entities)
             savedKeys.add(save(ent, wc));
@@ -813,7 +811,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return savedKeys;
     }
 
-    protected <T> Key<T> save(MongoCollection dbColl, T entity, WriteConcern wc) {
+    protected <T> Key<T> save(MongoCollection dbColl, T entity, Durability wc) {
         MappedClass mc = mapr.getMappedClass(entity);
         if (mc.getAnnotation(NotSaved.class) != null)
             throw new MappingException(
@@ -842,7 +840,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     protected <T> WriteResult tryVersionedUpdate(MongoCollection dbColl,
-            T entity, DBObject dbObj, WriteConcern wc, DB db, MappedClass mc) {
+            T entity, DBObject dbObj, Durability wc, DB db, MappedClass mc) {
         WriteResult wr = null;
         if (mc.getFieldsAnnotatedWith(Version.class).isEmpty())
             return wr;
@@ -879,26 +877,17 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wr;
     }
 
-    protected void throwOnError(WriteConcern wc, WriteResult wr) {
-        if (wc == null && wr.getLastConcern() == null) {
-            CommandResult cr = wr.getLastError();
-            if (cr != null && cr.getErrorMessage() != null
-                    && cr.getErrorMessage().length() > 0)
-                cr.throwOnError();
-        }
-    }
-
     public <T> Key<T> save(String kind, T entity) {
         entity = ProxyHelper.unwrap(entity);
         MongoCollection dbColl = getCollection(kind);
-        return save(dbColl, entity, getWriteConcern(entity));
+        return save(dbColl, entity, getDurability(entity));
     }
 
     public <T> Key<T> save(T entity) {
-        return save(entity, getWriteConcern(entity));
+        return save(entity, getDurability(entity));
     }
 
-    public <T> Key<T> save(T entity, WriteConcern wc) {
+    public <T> Key<T> save(T entity, Durability wc) {
         entity = ProxyHelper.unwrap(entity);
         MongoCollection dbColl = getCollection(entity);
         return save(dbColl, entity, wc);
@@ -918,11 +907,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     public <T> UpdateResults<T> update(Query<T> query, UpdateOperations<T> ops,
             boolean createIfMissing) {
         return update(query, ops, createIfMissing,
-                getWriteConcern(query.getEntityClass()));
+                getDurability(query.getEntityClass()));
     }
 
     public <T> UpdateResults<T> update(Query<T> query, UpdateOperations<T> ops,
-            boolean createIfMissing, WriteConcern wc) {
+            boolean createIfMissing, Durability wc) {
         return update(query, ops, createIfMissing, true, wc);
     }
 
@@ -966,12 +955,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     public <T> UpdateResults<T> updateFirst(Query<T> query,
             UpdateOperations<T> ops, boolean createIfMissing) {
         return update(query, ops, createIfMissing,
-                getWriteConcern(query.getEntityClass()));
+                getDurability(query.getEntityClass()));
 
     }
 
     public <T> UpdateResults<T> updateFirst(Query<T> query,
-            UpdateOperations<T> ops, boolean createIfMissing, WriteConcern wc) {
+            UpdateOperations<T> ops, boolean createIfMissing, Durability wc) {
         return update(query, ops, createIfMissing, false, wc);
     }
 
@@ -981,7 +970,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         DBObject dbObj = mapr.toDBObject(entity, involvedObjects);
 
         UpdateResults<T> res = update(query, dbObj, createIfMissing, false,
-                getWriteConcern(entity));
+                getDurability(entity));
 
         // update _id field
         CommandResult gle = res.getWriteResult().getCachedLastError();
@@ -993,10 +982,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     public <T> Key<T> merge(T entity) {
-        return merge(entity, getWriteConcern(entity));
+        return merge(entity, getDurability(entity));
     }
 
-    public <T> Key<T> merge(T entity, WriteConcern wc) {
+    public <T> Key<T> merge(T entity, Durability wc) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = mapr.toDBObject(entity, involvedObjects);
         Key<T> key = getKey(entity);
@@ -1052,7 +1041,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     @SuppressWarnings("rawtypes")
     private <T> UpdateResults<T> update(Query<T> query, UpdateOperations ops,
-            boolean createIfMissing, boolean multi, WriteConcern wc) {
+            boolean createIfMissing, boolean multi, Durability wc) {
         DBObject u = ((UpdateOpsImpl) ops).getOps();
         if (((UpdateOpsImpl) ops).isIsolated()) {
             Query<T> q = query.clone();
@@ -1066,11 +1055,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     private <T> UpdateResults<T> update(Query<T> query, UpdateOperations ops,
             boolean createIfMissing, boolean multi) {
         return update(query, ops, createIfMissing, multi,
-                getWriteConcern(query.getEntityClass()));
+                getDurability(query.getEntityClass()));
     }
 
     private <T> UpdateResults<T> update(Query<T> query, DBObject u,
-            boolean createIfMissing, boolean multi, WriteConcern wc) {
+            boolean createIfMissing, boolean multi, Durability wc) {
         QueryImpl<T> qi = (QueryImpl<T>) query;
 
         MongoCollection dbColl = qi.getCollection();
@@ -1090,7 +1079,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
         DBObject q = qi.getQueryObject();
         if (q == null)
-            q = new BasicDBObject();
+            q = ALL;
 
         if (log.isTraceEnabled())
             log.trace("Executing update(" + dbColl.getName() + ") for query: "
@@ -1310,7 +1299,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
      * Gets the write concern for entity or returns the default write concern
      * for this datastore
      */
-    public Durability getWriteConcern(Object clazzOrEntity) {
+    public Durability getDurability(Object clazzOrEntity) {
         Durability wc = defConcern;
         if (clazzOrEntity != null) {
             Entity entityAnn = getMapper().getMappedClass(clazzOrEntity)
@@ -1322,11 +1311,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wc;
     }
 
-    public Durability getDefaultWriteConcern() {
+    public Durability getDefaultDurability() {
         return defConcern;
     }
 
-    public void setDefaultWriteConcern(Durability wc) {
+    public void setDefaultDurability(Durability wc) {
         defConcern = wc;
     }
 }
