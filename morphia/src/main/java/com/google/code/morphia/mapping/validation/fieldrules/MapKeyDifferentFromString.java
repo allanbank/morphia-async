@@ -5,8 +5,8 @@ package com.google.code.morphia.mapping.validation.fieldrules;
 
 import java.util.Set;
 
-import org.bson.types.ObjectId;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Serialized;
 import com.google.code.morphia.mapping.MappedClass;
 import com.google.code.morphia.mapping.MappedField;

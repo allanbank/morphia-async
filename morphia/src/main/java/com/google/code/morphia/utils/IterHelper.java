@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bson.BSONObject;
-
 /**
  * Helper to allow for optimizations for different types of Map/Collections
  * @author Scott Hernandez
@@ -39,13 +37,6 @@ public class IterHelper<T, V> {
 				iter.eval((T)k, (V)m.get(k));
 			return;
 		}
-		if (x instanceof BSONObject) {
-			BSONObject m = (BSONObject) x;
-			for(String k : m.keySet())
-				iter.eval((T)k, (V)m.get(k));
-			return;
-		}
-		
 	}
 	
 	@SuppressWarnings({ "unchecked" })

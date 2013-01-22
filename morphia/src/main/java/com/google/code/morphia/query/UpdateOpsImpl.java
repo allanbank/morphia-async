@@ -8,10 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.Mapper;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 /**
  * 
@@ -41,7 +40,7 @@ public class UpdateOpsImpl<T> implements UpdateOperations<T> {
 	public void setOps(DBObject ops) {
 		this.ops = (Map<String, Map<String, Object>>) ops;
 	}
-	public DBObject getOps() {
+	public Document getOps() {
 		return new BasicDBObject(ops);
 	}
 
