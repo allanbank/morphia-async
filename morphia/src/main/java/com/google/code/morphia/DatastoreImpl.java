@@ -85,13 +85,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         this(morphia.getMapper(), mongo, dbName);
 
         if (username != null)
-            if (!this.db.authenticate(username, password))
-                throw new AuthenticationException(
-                        "User '"
-                                + username
-                                + "' cannot be authenticated with the given password for database '"
-                                + dbName + "'");
-
+            mongo.getConfig().authenticate(username, new String(password));
     }
 
     public DatastoreImpl(Morphia morphia, MongoClient mongo, String dbName) {
@@ -482,7 +476,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return query.filter(property, value);
     }
 
-    public <T> T get(Class<T> clazz, DBRef ref) {
+    public <T> T get(Class<T> clazz, DocumentReference ref) {
         return (T) mapr.fromDBObject(clazz, ref.fetch(), createCache());
     }
 
@@ -491,24 +485,22 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
                 .filter(Mapper.ID_KEY + " in", ids).enableValidation();
     }
 
-    /** Queries the server to check for each DBRef */
-    public <T> List<Key<T>> getKeysByRefs(List<DBRef> refs) {
+    /** Queries the server to check for each DocumentReference */
+    public <T> List<Key<T>> getKeysByRefs(List<DocumentReference> refs) {
         ArrayList<Key<T>> tempKeys = new ArrayList<Key<T>>(refs.size());
 
-        Map<String, List<DBRef>> kindMap = new HashMap<String, List<DBRef>>();
-        for (DBRef ref : refs) {
+        Map<String, List<DocumentReference>> kindMap = new HashMap<String, List<DocumentReference>>();
+        for (DocumentReference ref : refs) {
             if (kindMap.containsKey(ref.getRef()))
                 kindMap.get(ref.getRef()).add(ref);
             else
-                kindMap.put(
-                        ref.getRef(),
-                        new ArrayList<DBRef>(Collections
-                                .singletonList((DBRef) ref)));
+                kindMap.put(ref.getRef(), new ArrayList<DocumentReference>(
+                        Collections.singletonList((DocumentReference) ref)));
         }
         for (String kind : kindMap.keySet()) {
             List<Object> objIds = new ArrayList<Object>();
-            List<DBRef> kindRefs = kindMap.get(kind);
-            for (DBRef key : kindRefs) {
+            List<DocumentReference> kindRefs = kindMap.get(kind);
+            for (DocumentReference key : kindRefs) {
                 objIds.add(key.getId());
             }
             List<Key<T>> kindResults = this.<T> find(kind, null)
@@ -518,7 +510,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
         // put them back in order, minus the missing ones.
         ArrayList<Key<T>> keys = new ArrayList<Key<T>>(refs.size());
-        for (DBRef ref : refs) {
+        for (DocumentReference ref : refs) {
             Key<T> testKey = mapr.refToKey(ref);
             if (tempKeys.contains(testKey))
                 keys.add(testKey);
@@ -676,8 +668,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     public <T> Iterable<Key<T>> insert(String kind, Iterable<T> entities) {
-        return insert(kind, entities, getDurability(entities.iterator()
-                .next()));
+        return insert(kind, entities, getDurability(entities.iterator().next()));
     }
 
     public <T> Iterable<Key<T>> insert(Iterable<T> entities, Durability wc) {
@@ -749,8 +740,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return insert(dbColl, entity, wc);
     }
 
-    protected <T> Key<T> insert(MongoCollection dbColl, T entity,
-            Durability wc) {
+    protected <T> Key<T> insert(MongoCollection dbColl, T entity, Durability wc) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = entityToDBObj(entity, involvedObjects);
         WriteResult wr;
@@ -1282,10 +1272,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     /** Converts a list of refs to keys */
-    public static <T> List<Key<T>> refsToKeys(Mapper mapr, List<DBRef> refs,
-            Class<T> c) {
+    public static <T> List<Key<T>> refsToKeys(Mapper mapr,
+            List<DocumentReference> refs, Class<T> c) {
         ArrayList<Key<T>> keys = new ArrayList<Key<T>>(refs.size());
-        for (DBRef ref : refs) {
+        for (DocumentReference ref : refs) {
             keys.add((Key<T>) mapr.refToKey(ref));
         }
         return keys;

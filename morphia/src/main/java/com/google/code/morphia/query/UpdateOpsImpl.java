@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.Mapper;
 
@@ -49,12 +48,12 @@ public class UpdateOpsImpl<T> implements UpdateOperations<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void setOps(DBObject ops) {
+    public void setOps(Map<String, Map<String, Object>> ops) {
         this.ops = (Map<String, Map<String, Object>>) ops;
     }
 
-    public Document getOps() {
-        return new BasicDBObject(ops);
+    public Map<String, Map<String, Object>> getOps() {
+        return ops;
     }
 
     public UpdateOperations<T> add(String fieldExpr, Object value) {
@@ -174,8 +173,10 @@ public class UpdateOpsImpl<T> implements UpdateOperations<T> {
             else
                 val = mapr.toMongoObject(mf, null, value);
 
-        if (UpdateOperator.ADD_TO_SET_EACH.equals(op))
-            val = new BasicDBObject(UpdateOperator.EACH.val(), val);
+        if (UpdateOperator.ADD_TO_SET_EACH.equals(op)) {
+            val = new HashMap<String, Object>();
+            ((Map<String, Object>)val).put(UpdateOperator.EACH.val(), val);
+        }
 
         if (val == null)
             val = value;

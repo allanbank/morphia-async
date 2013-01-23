@@ -1,5 +1,7 @@
 package com.google.code.morphia.utils;
 
+import java.util.Map;
+
 import com.allanbank.mongodb.ClosableIterator;
 import com.allanbank.mongodb.MongoCollection;
 import com.allanbank.mongodb.MongoDatabase;
@@ -42,7 +44,7 @@ public class Helper {
         return ((MorphiaIterator) it).getCursor();
     }
 
-    public static Document getUpdateOperations(UpdateOperations ops) {
+    public static Map<String, Map<String, Object>> getUpdateOperations(UpdateOperations ops) {
         UpdateOpsImpl uo = (UpdateOpsImpl) ops;
         return uo.getOps();
     }

@@ -10,8 +10,6 @@ import com.google.code.morphia.mapping.MappedClass;
 import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.utils.ReflectionUtils;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 public class FieldCriteria extends AbstractCriteria implements Criteria {
 	private static final Logr log = MorphiaLoggerFactory.get(FieldCriteria.class);
@@ -19,13 +17,9 @@ public class FieldCriteria extends AbstractCriteria implements Criteria {
 	protected final String field;
 	protected final FilterOperator operator;
 	protected final Object value;
-	protected final boolean not;
 	
 	@SuppressWarnings("unchecked")
 	protected FieldCriteria(QueryImpl<?> query, String field, FilterOperator op, Object value, boolean validateNames, boolean validateTypes) {
-		this(query, field, op, value, validateNames, validateTypes, false);
-	}
-	protected FieldCriteria(QueryImpl<?> query, String field, FilterOperator op, Object value, boolean validateNames, boolean validateTypes, boolean not) {
 		StringBuffer sb = new StringBuffer(field); //validate might modify prop string to translate java field name to db field name
 		MappedField mf = Mapper.validate(query.getEntityClass(), query.getDatastore().getMapper(), sb, op, value, validateNames, validateTypes);
 		field = sb.toString();
@@ -54,37 +48,29 @@ public class FieldCriteria extends AbstractCriteria implements Criteria {
 		}
 		
 		//TODO: investigate and/or add option to control this.
-		if (op == FilterOperator.ELEMENT_MATCH && mappedValue instanceof DBObject)
-			((DBObject)mappedValue).removeField(Mapper.ID_KEY);
+		if (op == FilterOperator.ELEMENT_MATCH && mappedValue instanceof Map)
+			((Map)mappedValue).remove(Mapper.ID_KEY);
 		
 		this.field = field;
 		this.operator = op;
-		if (not)
-			this.value = new BasicDBObject("$not", mappedValue);
-		else
-			this.value = mappedValue;
-		this.not = not;
+		this.value = mappedValue;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void addTo(DBObject obj) {
-		if (FilterOperator.EQUAL.equals(operator)) {
-			obj.put(this.field, value); // no operator, prop equals value
+	public void addTo(Map<String, Object> obj) {
+		if (FilterOperator.EQUAL.equals(this.operator)) {
+			obj.put(this.field, this.value); // no operator, prop equals value
 			
 		} else {
-			Object inner = obj.get(field); // operator within inner object
+			Object inner = obj.get(this.field); // operator within inner object
 
 			if (!(inner instanceof Map)) {
 				inner = new HashMap<String, Object>();
-				obj.put(field, inner);
+				obj.put(this.field, inner);
 			}
-			Object val = not ? new BasicDBObject("$not", value) : value;
-			((Map<String, Object>)inner).put(operator.val(), val);
+			
+			((Map<String, Object>)inner).put(this.operator.val(), this.value);
 		}
-	}
-	
-	public String getFieldName() {
-		return field;
 	}
 
 	@Override

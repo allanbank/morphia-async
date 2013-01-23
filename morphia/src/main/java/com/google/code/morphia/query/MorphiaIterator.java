@@ -14,25 +14,29 @@ import com.google.code.morphia.mapping.cache.EntityCache;
  */
 @SuppressWarnings("unchecked")
 public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
-    protected final Iterator<Document> wrapped;
-    protected final Mapper m;
-    protected final Class<T> clazz;
-    protected final String kind;
-    protected final EntityCache cache;
-    protected long driverTime = 0;
-    protected long mapperTime = 0;
+    private final ClosableIterator<Document> wrapped;
+    private final Mapper m;
+    private final Class<T> clazz;
+    // private final String kind;
+    private final EntityCache cache;
+    private long driverTime = 0;
+    private long mapperTime = 0;
 
-    public MorphiaIterator(Iterator<Document> it, Mapper m, Class<T> clazz,
-            String kind, EntityCache cache) {
+    public MorphiaIterator(ClosableIterator<Document> it, Mapper m,
+            Class<T> clazz, String kind, EntityCache cache) {
         this.wrapped = it;
         this.m = m;
         this.clazz = clazz;
-        this.kind = kind;
+        // this.kind = kind;
         this.cache = cache;
     }
 
     public Iterator<V> iterator() {
         return this;
+    }
+
+    public ClosableIterator<Document> getCursor() {
+        return wrapped;
     }
 
     public boolean hasNext() {
@@ -53,9 +57,9 @@ public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
 
     protected V processItem(Document dbObj) {
         long start = System.currentTimeMillis();
-        V item = convertItem(dbObj);
+        V entity = (V) m.fromDBObject(clazz, dbObj, cache);
         mapperTime += System.currentTimeMillis() - start;
-        return (V) item;
+        return (V) entity;
     }
 
     protected Document getNext() {
@@ -63,10 +67,6 @@ public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
         Document dbObj = (Document) wrapped.next();
         driverTime += System.currentTimeMillis() - start;
         return dbObj;
-    }
-
-    protected V convertItem(Document dbObj) {
-        return (V) m.fromDBObject(clazz, dbObj, cache);
     }
 
     public void remove() {
@@ -85,12 +85,8 @@ public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
         return mapperTime;
     }
 
-    public ClosableIterator<Document> getCursor() {
-        return (ClosableIterator<Document>) wrapped;
-    }
-
     public void close() {
-        if (wrapped != null && wrapped instanceof ClosableIterator)
-            ((ClosableIterator<Document>) wrapped).close();
+        if (wrapped != null)
+            wrapped.close();
     }
 }

@@ -1,16 +1,18 @@
 package com.google.code.morphia.query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.allanbank.mongodb.ClosableIterator;
 import com.allanbank.mongodb.MongoCollection;
-import com.allanbank.mongodb.ReadPreference;
 import com.allanbank.mongodb.bson.Document;
+import com.allanbank.mongodb.bson.DocumentAssignable;
+import com.allanbank.mongodb.bson.builder.BuilderFactory;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
+import com.allanbank.mongodb.builder.Find;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.DatastoreImpl;
 import com.google.code.morphia.Key;
@@ -18,7 +20,6 @@ import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.logging.Logr;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
 import com.google.code.morphia.mapping.MappedClass;
-import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.mapping.cache.EntityCache;
 
@@ -42,7 +43,7 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
 
     private String[] fields = null;
     private Boolean includeFields = null;
-    private Document sort = null;
+    private Map<String, Integer> sort = null;
     private DatastoreImpl ds = null;
     private MongoCollection dbColl = null;
     private int offset = 0;
@@ -50,12 +51,10 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
     private int batchSize = 0;
     private String indexHint;
     private Class<T> clazz = null;
-    private Document baseQuery = null;
+    private Map<String, Object> baseQuery = null;
     private boolean snapshotted = false;
+    private boolean slaveOk = false;
     private boolean noTimeout = false;
-    private boolean tail = false;
-    private boolean tail_await_data;
-    private ReadPreference readPref = null;
 
     public QueryImpl(Class<T> clazz, MongoCollection coll, Datastore ds) {
         super(CriteriaJoin.AND);
@@ -69,9 +68,8 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         MappedClass mc = this.ds.getMapper().getMappedClass(clazz);
         Entity entAn = mc == null ? null : mc.getEntityAnnotation();
         if (entAn != null)
-            this.readPref = this.ds.getMapper().getMappedClass(clazz)
-                    .getEntityAnnotation().queryNonPrimary() ? ReadPreference.SECONDARY
-                    : null;
+            this.slaveOk = this.ds.getMapper().getMappedClass(clazz)
+                    .getEntityAnnotation().queryNonPrimary();
     }
 
     public QueryImpl(Class<T> clazz, MongoCollection coll, Datastore ds,
@@ -82,36 +80,30 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
     }
 
     public QueryImpl(Class<T> clazz, MongoCollection coll, DatastoreImpl ds,
-            Document baseQuery) {
+            Map<String, Object> baseQuery) {
         this(clazz, coll, ds);
-        this.baseQuery = (Document) baseQuery;
+        this.baseQuery = baseQuery;
     }
 
     @Override
     public QueryImpl<T> clone() {
         QueryImpl<T> n = new QueryImpl<T>(clazz, dbColl, ds);
+        n.attachedTo = attachedTo;
+        n.baseQuery = baseQuery;
         n.batchSize = batchSize;
-        n.cache = this.ds.getMapper().createEntityCache(); // fresh cache
-        n.fields = fields == null ? null : Arrays.copyOf(fields, fields.length);
+        n.cache = cache;
+        n.fields = fields;
         n.includeFields = includeFields;
         n.indexHint = indexHint;
         n.limit = limit;
         n.noTimeout = noTimeout;
-        n.query = n; // feels weird, correct?
         n.offset = offset;
-        n.readPref = readPref;
+        n.query = n;
+        n.slaveOk = slaveOk;
         n.snapshotted = snapshotted;
+        n.sort = sort;
         n.validateName = validateName;
         n.validateType = validateType;
-        n.sort = (Document) (sort == null ? null : sort.clone());
-        n.baseQuery = (Document) (baseQuery == null ? null : baseQuery.clone());
-
-        // fields from superclass
-        n.attachedTo = attachedTo;
-        n.children = children == null ? null
-                : new ArrayList<Criteria>(children);
-        n.tail = tail;
-        n.tail_await_data = tail_await_data;
         return n;
     }
 
@@ -119,8 +111,8 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         return dbColl;
     }
 
-    public void setQueryObject(Document query) {
-        this.baseQuery = (Document) query;
+    public void setQueryObject(Map<String, Object> query) {
+        this.baseQuery = query;
     }
 
     public int getOffset() {
@@ -132,15 +124,20 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
     }
 
     public Document getQueryObject() {
-        Document obj = new Document();
+        Map<String, Object> obj = new HashMap<String, Object>();
 
         if (this.baseQuery != null) {
-            obj.putAll((BSONObject) this.baseQuery);
+            obj.putAll(this.baseQuery);
         }
 
         this.addTo(obj);
 
-        return obj;
+        DocumentBuilder builder = BuilderFactory.start();
+        for (Map.Entry<String, Object> entry : obj.entrySet()) {
+            builder.add(entry.getKey(), entry.getValue());
+        }
+
+        return builder.build();
     }
 
     public DatastoreImpl getDatastore() {
@@ -151,27 +148,24 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         if (fields == null || fields.length == 0)
             return null;
 
-        Map<String, Integer> fieldsFilter = new HashMap<String, Integer>();
+        DocumentBuilder fieldsFilter = BuilderFactory.start();
         for (String field : this.fields) {
-            StringBuffer sb = new StringBuffer(field); // validate might modify
-                                                       // prop string to
-                                                       // translate java field
-                                                       // name to db field name
-            Mapper.validate(clazz, ds.getMapper(), sb, FilterOperator.EQUAL,
-                    null, validateName, false);
-            field = sb.toString();
-            fieldsFilter.put(field, (includeFields ? 1 : 0));
+            fieldsFilter.add(field, (includeFields));
         }
 
-        // Add className field just in case.
-        if (includeFields)
-            fieldsFilter.put(Mapper.CLASS_NAME_FIELDNAME, 1);
-
-        return new Document(fieldsFilter);
+        return fieldsFilter.build();
     }
 
     public Document getSortObject() {
-        return (sort == null) ? null : sort;
+        if (sort == null) {
+            return null;
+        }
+        DocumentBuilder sortDoc = BuilderFactory.start();
+        for (Map.Entry<String, Integer> field : this.sort.entrySet()) {
+            sortDoc.add(field.getKey(), field.getValue());
+        }
+
+        return sortDoc.build();
     }
 
     public boolean isValidatingNames() {
@@ -187,10 +181,10 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         if (log.isTraceEnabled())
             log.trace("Executing count(" + dbColl.getName() + ") for query: "
                     + query);
-        return dbColl.getCount(query);
+        return dbColl.count(query);
     }
 
-    public DBCursor prepareCursor() {
+    public ClosableIterator<Document> prepareCursor() {
         Document query = getQueryObject();
         Document fields = getFieldsObject();
 
@@ -199,54 +193,33 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
                     + ", fields:" + fields + ",off:" + offset + ",limit:"
                     + limit);
 
-        DBCursor cursor = dbColl.find(query, fields);
-        cursor.setDecoderFactory(this.ds.getDecoderFact());
+        Find.Builder builder = new Find.Builder(query);
+        builder.setReturnFields(fields);
 
         if (offset > 0)
-            cursor.skip(offset);
+            builder.setNumberToSkip(offset);
         if (limit > 0)
-            cursor.limit(limit);
+            builder.setLimit(limit);
         if (batchSize > 0)
-            cursor.batchSize(batchSize);
+            builder.setBatchSize(batchSize);
         if (snapshotted)
-            cursor.snapshot();
+            builder.snapshot();
         if (sort != null)
-            cursor.sort(sort);
+            builder.setSort(getSortObject());
         if (indexHint != null)
-            cursor.hint(indexHint);
-
-        if (null != readPref) {
-            cursor.setReadPreference(readPref);
-        }
-
-        if (noTimeout) {
-            cursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
-        }
-
-        if (tail) {
-            cursor.addOption(Bytes.QUERYOPTION_TAILABLE);
-            if (tail_await_data)
-                cursor.addOption(Bytes.QUERYOPTION_AWAITDATA);
-        }
+            builder.setHint(indexHint);
 
         // Check for bad options.
         if (snapshotted && (sort != null || indexHint != null))
             log.warning("Snapshotted query should not have hint/sort.");
 
-        if (tail && (sort != null)) {
-            // i don´t think that just warning is enough here, i´d favor a RTE,
-            // agree?
-            log.warning("Sorting on tail is not allowed.");
-        }
-
-        return cursor;
+        return dbColl.find(builder.build());
     }
 
     public Iterable<T> fetch() {
-        DBCursor cursor = prepareCursor();
+        ClosableIterator<Document> cursor = prepareCursor();
         if (log.isTraceEnabled())
-            log.trace("Getting cursor(" + dbColl.getName() + ")  for query:"
-                    + cursor.getQuery());
+            log.trace("Getting cursor(" + dbColl.getName() + ")  for query.");
 
         return new MorphiaIterator<T, T>(cursor, ds.getMapper(), clazz,
                 dbColl.getName(), cache);
@@ -257,11 +230,10 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         Boolean oldInclude = includeFields;
         fields = new String[] { Mapper.ID_KEY };
         includeFields = true;
-        DBCursor cursor = prepareCursor();
+        ClosableIterator<Document> cursor = prepareCursor();
 
         if (log.isTraceEnabled())
-            log.trace("Getting cursor(" + dbColl.getName() + ") for query:"
-                    + cursor.getQuery());
+            log.trace("Getting cursor(" + dbColl.getName() + ") for query.");
 
         fields = oldFields;
         includeFields = oldInclude;
@@ -360,7 +332,7 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         return this;
     }
 
-    public Query<T> where(CodeWScope js) {
+    public Query<T> where(String js, DocumentAssignable scope) {
         this.add(new WhereCriteria(js));
         return this;
     }
@@ -435,21 +407,14 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
             throw new QueryException(
                     "order cannot be used on a snapshotted query.");
 
-        // reset order
-        if (condition == null || condition.trim() == "")
-            sort = null;
-
-        sort = parseFieldsString(condition, clazz, this.ds.getMapper(),
-                this.validateName);
+        // TODO: validate names and translate from java names.
+        sort = parseSortString(condition);
 
         return this;
     }
 
-    /** parses the string and validates each part */
-    @SuppressWarnings("rawtypes")
-    public static Document parseFieldsString(String str, Class clazz,
-            Mapper mapr, boolean validate) {
-        DocumentBuilder ret = DocumentBuilder.start();
+    public static Map<String, Integer> parseSortString(String str) {
+        Map<String, Integer> ret = new HashMap<String, Integer>();
         String[] parts = str.split(",");
         for (String s : parts) {
             s = s.trim();
@@ -460,31 +425,13 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
                 s = s.substring(1).trim();
             }
 
-            if (validate) {
-                StringBuffer sb = new StringBuffer(s);
-                Mapper.validate(clazz, mapr, sb, FilterOperator.IN, "", true,
-                        false);
-                s = sb.toString();
-            }
-            ret = ret.add(s, dir);
+            ret.put(s, Integer.valueOf(dir));
         }
-        return (Document) ret.get();
+        return ret;
     }
 
     public Iterator<T> iterator() {
         return fetch().iterator();
-    }
-
-    public Iterator<T> tail() {
-        return tail(true);
-    }
-
-    public Iterator<T> tail(boolean awaitData) {
-        // Create a new query for this, so the current one is not affected.
-        QueryImpl<T> tailQ = clone();
-        tailQ.tail = true;
-        tailQ.tail_await_data = awaitData;
-        return tailQ.fetch().iterator();
     }
 
     public Class<T> getEntityClass() {
@@ -532,17 +479,6 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         return this;
     }
 
-    public Query<T> retrieveKnownFields() {
-        MappedClass mc = this.ds.getMapper().getMappedClass(clazz);
-        ArrayList<String> fields = new ArrayList<String>(mc
-                .getPersistenceFields().size() + 1);
-        for (MappedField mf : mc.getPersistenceFields()) {
-            fields.add(mf.getNameToStore());
-        }
-        retrievedFields(true, (String[]) fields.toArray());
-        return this;
-    }
-
     /**
      * Enabled snapshotted mode where duplicate results (which may be updated
      * during the lifetime of the cursor) will not be returned. Not compatible
@@ -562,36 +498,25 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>,
         return this;
     }
 
-    public Query<T> useReadPreference(ReadPreference readPref) {
-        this.readPref = readPref;
-        return this;
-    }
-
     public Query<T> queryNonPrimary() {
-        readPref = ReadPreference.SECONDARY;
+        slaveOk = true;
         return this;
     }
 
     public Query<T> queryPrimaryOnly() {
-        readPref = ReadPreference.PRIMARY;
+        slaveOk = false;
         return this;
     }
 
     /** Disables cursor timeout on server. */
-    public Query<T> disableCursorTimeout() {
-        noTimeout = true;
-        return this;
-    }
-
-    /** Enables cursor timeout on server. */
-    public Query<T> enableCursorTimeout() {
+    public Query<T> disableTimeout() {
         noTimeout = false;
         return this;
     }
 
-    @Override
-    public String getFieldName() {
-        return null;
+    /** Enables cursor timeout on server. */
+    public Query<T> enableTimeout() {
+        noTimeout = true;
+        return this;
     }
-
 }

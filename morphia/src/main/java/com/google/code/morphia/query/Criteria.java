@@ -1,9 +1,9 @@
 package com.google.code.morphia.query;
 
-import com.mongodb.DBObject;
+import java.util.Map;
+
 
 public interface Criteria {
-	void addTo(DBObject obj);
+	void addTo(Map<String, Object> obj);
 	void attach(CriteriaContainerImpl container);
-	String getFieldName();
 }
