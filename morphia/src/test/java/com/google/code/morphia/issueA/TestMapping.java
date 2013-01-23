@@ -2,13 +2,13 @@ package com.google.code.morphia.issueA;
 
 import java.io.Serializable;
 
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.Document;
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.TestBase;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Id;
-import com.mongodb.DBObject;
 
 
 /**
@@ -22,7 +22,7 @@ public class TestMapping extends TestBase {
         Class_level_three sp = new Class_level_three();
 
         //Old way
-        DBObject wrapObj = morphia.toDBObject(sp);  //the error points here from the user
+        Document wrapObj = morphia.toDBObject(sp);  //the error points here from the user
         ds.getDB().getCollection("testColl").save(wrapObj);
         
         

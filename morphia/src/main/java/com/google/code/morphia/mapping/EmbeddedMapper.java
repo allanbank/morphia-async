@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.mapping.cache.EntityCache;
 import com.google.code.morphia.utils.IterHelper;
 import com.google.code.morphia.utils.IterHelper.MapIterCallback;
@@ -21,7 +22,7 @@ import com.mongodb.DBObject;
 
 @SuppressWarnings({"unchecked","rawtypes"})
 class EmbeddedMapper implements CustomMapper{
-	public void toDBObject(final Object entity, final MappedField mf, final DBObject dbObject, Map<Object, DBObject> involvedObjects, Mapper mapr) {
+	public void toDocument(final Object entity, final MappedField mf, final DocumentBuilder builder, Map<Object, Document> involvedObjects, Mapper mapr) {
 		String name = mf.getNameToStore();
 		
 		Object fieldValue = mf.getFieldValue(entity);
@@ -116,7 +117,7 @@ class EmbeddedMapper implements CustomMapper{
 		}
 	}
 	
-	public void fromDBObject(final DBObject dbObject, final MappedField mf, final Object entity, EntityCache cache, Mapper mapr) {
+	public void fromDocument(final Document dbObject, final MappedField mf, final Object entity, EntityCache cache, Mapper mapr) {
 		try {
 			if (mf.isMap()) {
 				readMap(dbObject, mf, entity, cache, mapr);

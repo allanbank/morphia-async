@@ -3,7 +3,7 @@
  */
 package com.google.code.morphia.mapping.validation.fieldrules;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

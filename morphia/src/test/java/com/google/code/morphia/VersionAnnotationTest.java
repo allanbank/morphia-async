@@ -18,10 +18,10 @@ package com.google.code.morphia;
 
 import java.util.ConcurrentModificationException;
 
-import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Version;
 

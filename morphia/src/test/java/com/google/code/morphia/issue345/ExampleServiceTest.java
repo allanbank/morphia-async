@@ -1,5 +1,6 @@
 package com.google.code.morphia.issue345;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
@@ -9,11 +10,15 @@ import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.allanbank.mongodb.MongoClient;
+import com.allanbank.mongodb.MongoClientConfiguration;
+import com.allanbank.mongodb.MongoDbException;
+import com.allanbank.mongodb.MongoFactory;
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.AdvancedDatastore;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Key;
@@ -24,310 +29,354 @@ import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Version;
 import com.google.code.morphia.dao.BasicDAO;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 @RunWith(ConcurrentJunitRunner.class)
 @Concurrent(threads = 4)
 @Ignore
 public class ExampleServiceTest extends TestCase {
 
-	// private ExampleService service = new ExampleService();
-	// @Autowired
-	BookingDetailService bookingDetailService;
+    // private ExampleService service = new ExampleService();
+    // @Autowired
+    BookingDetailService bookingDetailService;
 
-	static MongoConnectionManager mcm;
+    static MongoConnectionManager mcm;
 
-	static {
-		mcm = new MongoConnectionManager("localhost", 27017);
-		MorphiaLoggerFactory.get(ExampleServiceTest.class).debug("starting ...");
-	}
+    static {
+        mcm = new MongoConnectionManager("localhost", 27017);
+        MorphiaLoggerFactory.get(ExampleServiceTest.class)
+                .debug("starting ...");
+    }
 
-	{
-		bookingDetailService = new BookingDetailService();
-		bookingDetailService.setMongoConnectionManager(mcm);
-	}
+    {
+        bookingDetailService = new BookingDetailService();
+        bookingDetailService.setMongoConnectionManager(mcm);
+    }
 
-	@Test
-	public void test1() {
+    @Test
+    public void test1() {
 
-		Customer cust = new Customer();
-		cust.setName("Jill P");
-		cust.setPreferredNumber("0421761183");
+        Customer cust = new Customer();
+        cust.setName("Jill P");
+        cust.setPreferredNumber("0421761183");
 
-		bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class, "24-11-2011"), "09:00 am", cust);
-	}
+        bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class,
+                "24-11-2011"), "09:00 am", cust);
+    }
 
-	@Test
-	public void test2() {
+    @Test
+    public void test2() {
 
-		Customer cust = new Customer();
-		cust.setName("Sam D");
-		cust.setPreferredNumber("0421761183");
+        Customer cust = new Customer();
+        cust.setName("Sam D");
+        cust.setPreferredNumber("0421761183");
 
-		bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class, "24-11-2011"), "09:00 am", cust);
-	}
+        bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class,
+                "24-11-2011"), "09:00 am", cust);
+    }
 
-	@Test
-	public void test3() {
+    @Test
+    public void test3() {
 
-		Customer cust = new Customer();
-		cust.setName("Jenny B");
-		cust.setPreferredNumber("0421761183");
+        Customer cust = new Customer();
+        cust.setName("Jenny B");
+        cust.setPreferredNumber("0421761183");
 
-		bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class, "24-11-2011"), "09:00 am", cust);
-	}
+        bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class,
+                "24-11-2011"), "09:00 am", cust);
+    }
 
-	@Test
-	public void test4() {
+    @Test
+    public void test4() {
 
-		Customer cust = new Customer();
-		cust.setName("Janet T");
-		cust.setPreferredNumber("0421761183");
+        Customer cust = new Customer();
+        cust.setName("Janet T");
+        cust.setPreferredNumber("0421761183");
 
-		bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class, "24-11-2011"), "09:00 am", cust);
-	}
+        bookingDetailService.book(new Key<BookingDetail>(BookingDetail.class,
+                "24-11-2011"), "09:00 am", cust);
+    }
 
-	@Embedded
-	private static class Customer {
-		String name;
-		String preferredNumber;
-		public final String getName() {
-			return name;
-		}
-		public final void setName(String name) {
-			this.name = name;
-		}
-		public final void setPreferredNumber(String preferredNumber) {
-			this.preferredNumber = preferredNumber;
-		}
-	}
+    @Embedded
+    private static class Customer {
+        String name;
+        String preferredNumber;
 
-	@Embedded
-	private static class Consultant {
-		private String name;
-		public final void setName(String name) {
-			this.name = name;
-		}
-	}
+        public final String getName() {
+            return name;
+        }
 
-	@Entity("BookingDetail")
-	//@Indexes(@Index(unique=true, value="date"))
-	private static class BookingDetail {
-		@Id private String date;
-		@Version private Long version;
-		@Embedded private List<BookingSlot> bookingSlot;
-		public BookingDetail() {
-			super();
-			bookingSlot = new ArrayList<BookingSlot>();
-		}
-		public final void setDate(String date) {
-			this.date = date;
-		}
-		public final Long getVersion() {
-			return version;
-		}
-		public final List<BookingSlot> getBookingSlot() {
-			return bookingSlot;
-		}
-	}
+        public final void setName(String name) {
+            this.name = name;
+        }
 
-	@Embedded
-	private static class BookingSlot {
-		// No id because this class is embedded.
-		private String startTime;
-		private String endTime;
-		@Embedded
-		private Consultant consultant;
-		private boolean enabled;
-		@Embedded
-		private Customer customer;
-		private Date dateCreated;
-		public final String getStartTime() {
-			return startTime;
-		}
-		public final void setStartTime(String startTime) {
-			this.startTime = startTime;
-		}
-		public final void setEndTime(String endTime) {
-			this.endTime = endTime;
-		}
-		public final void setConsultant(Consultant consultant) {
-			this.consultant = consultant;
-		}
-		public final void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-		public final Customer getCustomer() {
-			return customer;
-		}
-		public final void setCustomer(Customer customer) {
-			this.customer = customer;
-		}
-	}
+        public final void setPreferredNumber(String preferredNumber) {
+            this.preferredNumber = preferredNumber;
+        }
+    }
 
-	private static class MongoConnectionManager {
-		private final Datastore db;
-		public static final String DB_NAME = "cal_dev";
-		public MongoConnectionManager(String host, int port) {
-			try {
-				Mongo m = new Mongo(host, port);
-				db = new Morphia().map(BookingDetail.class).createDatastore(m, DB_NAME);
-				db.ensureIndexes();
-			} catch (Exception e) {
-				throw new RuntimeException("Error initializing mongo db", e);
-			}
-		}
+    @Embedded
+    private static class Consultant {
+        private String name;
 
-		public Datastore getDb() {
-			return db;
-		}
-	}
+        public final void setName(String name) {
+            this.name = name;
+        }
+    }
 
+    @Entity("BookingDetail")
+    // @Indexes(@Index(unique=true, value="date"))
+    private static class BookingDetail {
+        @Id
+        private String date;
+        @Version
+        private Long version;
+        @Embedded
+        private List<BookingSlot> bookingSlot;
 
-	private static class BookingDetailService {
-		private static final Logger logger = java.util.logging.Logger.getLogger(BookingDetailService.class.getSimpleName());
-		MongoConnectionManager mongoConnectionManager;
+        public BookingDetail() {
+            super();
+            bookingSlot = new ArrayList<BookingSlot>();
+        }
 
-		public BookingDetail loadOrCreate(Key<BookingDetail> key) {
-			BookingDetail bookingDetail = null;
-			int tries = 3;
-			boolean success = false;
-			for (int i = 0; i < tries; i++) {
-				try {
-					bookingDetail = load(key);
-					if (bookingDetail == null) {
-						create(key); // Many threads can enter here.
-						bookingDetail = load(key);
-						if (bookingDetail != null) {
-							success = true;
-							break;
-						}
-					} else {
-						success = true;
-						break;
-					}
-				} catch (MongoException e) {
-					// Duplicate key.
-					logger.log( Level.FINE, "loadOrCreate attempt: "+ i +" another user beat us to it.", e);
-				}
-			}
+        public final void setDate(String date) {
+            this.date = date;
+        }
 
-			if (!success) {
-				logger.warning("Could not loadOrCreate at this time, please try again later");
-				// TODO change to service exception.
-				throw new RuntimeException(
-						"Could not loadOrCreate at this time, please try again later");
-			}
-			return bookingDetail;
-		}
+        public final Long getVersion() {
+            return version;
+        }
 
-		public Key<BookingDetail> create(Key<BookingDetail> key) {
-			BookingDetail bookingDetail = new BookingDetail();
-			bookingDetail.setDate((String) key.getId());
-			createSlots(bookingDetail.getBookingSlot());
-			BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(BookingDetail.class, mongoConnectionManager.getDb());
-			Key<BookingDetail> result = ((AdvancedDatastore) dao.getDatastore()).insert(bookingDetail);
-			dao.ensureIndexes();
-			return result;
-		}
+        public final List<BookingSlot> getBookingSlot() {
+            return bookingSlot;
+        }
+    }
 
-		public BookingDetail load(Key<BookingDetail> key) {
-			BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(BookingDetail.class, mongoConnectionManager.getDb());
-			return dao.getDatastore().getByKey(BookingDetail.class, key);
+    @Embedded
+    private static class BookingSlot {
+        // No id because this class is embedded.
+        private String startTime;
+        private String endTime;
+        @Embedded
+        private Consultant consultant;
+        private boolean enabled;
+        @Embedded
+        private Customer customer;
+        private Date dateCreated;
 
-		}
+        public final String getStartTime() {
+            return startTime;
+        }
 
-		public Key<BookingDetail> update(BookingDetail bd) {
+        public final void setStartTime(String startTime) {
+            this.startTime = startTime;
+        }
 
-			BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
-					BookingDetail.class, mongoConnectionManager.getDb());
+        public final void setEndTime(String endTime) {
+            this.endTime = endTime;
+        }
 
-			Key<BookingDetail> result = dao.getDatastore().save(bd);
-			return result;
-		}
+        public final void setConsultant(Consultant consultant) {
+            this.consultant = consultant;
+        }
 
-		public void book(Key<BookingDetail> key, String startTime, Customer customer) {
+        public final void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
 
-			int tries = 3;
-			boolean success = false;
+        public final Customer getCustomer() {
+            return customer;
+        }
 
-			for (int i = 0; i < tries; i++) {
+        public final void setCustomer(Customer customer) {
+            this.customer = customer;
+        }
+    }
 
-				try {
+    private static class MongoConnectionManager {
+        private final Datastore db;
+        public static final String DB_NAME = "cal_dev";
 
-					BookingDetail loadedBookingDetail = loadOrCreate(key);
-					List<BookingSlot> availableSlots = new ArrayList<BookingSlot>();
-					for (BookingSlot slot : loadedBookingDetail.getBookingSlot()) {
+        public MongoConnectionManager(String host, int port) {
+            try {
+                MongoClientConfiguration config = new MongoClientConfiguration();
+                config.addServer(new InetSocketAddress(host, port));
+                MongoClient m = MongoFactory.createClient(config);
 
-						if (slot.getStartTime().equals(startTime)
-								&& slot.getCustomer() == null) {
-							availableSlots.add(slot);
-						}
-					}
+                db = new Morphia().map(BookingDetail.class).createDatastore(m,
+                        DB_NAME);
+                db.ensureIndexes();
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Error initializing mongo db", e);
+            }
+        }
 
-					if (availableSlots.size() == 0) {
-						// No available slots left, another user must have beaten us to it.
-						// TODO change to service exception.
-						throw new RuntimeException("No available slots for xxx");
-					}
+        public Datastore getDb() {
+            return db;
+        }
+    }
 
-					// TODO Logic to choose consultant.
-					availableSlots.get(0).setCustomer(customer);
-					logger.log( Level.FINE, "Book for customer: " + customer.getName() + " version: " + loadedBookingDetail.getVersion() + " ...");
-					update(loadedBookingDetail);
-					logger.log( Level.FINE, "Booked.");
+    private static class BookingDetailService {
+        private static final Logger logger = java.util.logging.Logger
+                .getLogger(BookingDetailService.class.getSimpleName());
+        MongoConnectionManager mongoConnectionManager;
 
-					success = true;
-					break;
+        public BookingDetail loadOrCreate(Key<BookingDetail> key) {
+            BookingDetail bookingDetail = null;
+            int tries = 3;
+            boolean success = false;
+            for (int i = 0; i < tries; i++) {
+                try {
+                    bookingDetail = load(key);
+                    if (bookingDetail == null) {
+                        create(key); // Many threads can enter here.
+                        bookingDetail = load(key);
+                        if (bookingDetail != null) {
+                            success = true;
+                            break;
+                        }
+                    }
+                    else {
+                        success = true;
+                        break;
+                    }
+                }
+                catch (MongoDbException e) {
+                    // Duplicate key.
+                    logger.log(Level.FINE, "loadOrCreate attempt: " + i
+                            + " another user beat us to it.", e);
+                }
+            }
 
-				} catch (ConcurrentModificationException e) {
-					logger.log( Level.FINE, "Book attempt: " + i + " failed, another user beat us to it.", e);
-				}
+            if (!success) {
+                logger.warning("Could not loadOrCreate at this time, please try again later");
+                // TODO change to service exception.
+                throw new RuntimeException(
+                        "Could not loadOrCreate at this time, please try again later");
+            }
+            return bookingDetail;
+        }
 
-			}
+        public Key<BookingDetail> create(Key<BookingDetail> key) {
+            BookingDetail bookingDetail = new BookingDetail();
+            bookingDetail.setDate((String) key.getId());
+            createSlots(bookingDetail.getBookingSlot());
+            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+                    BookingDetail.class, mongoConnectionManager.getDb());
+            Key<BookingDetail> result = ((AdvancedDatastore) dao.getDatastore())
+                    .insert(bookingDetail);
+            dao.ensureIndexes();
+            return result;
+        }
 
-			if (!success) {
+        public BookingDetail load(Key<BookingDetail> key) {
+            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+                    BookingDetail.class, mongoConnectionManager.getDb());
+            return dao.getDatastore().getByKey(BookingDetail.class, key);
 
-				logger.severe("Could not make a booking at this time, please try again later.");
+        }
 
-				throw new RuntimeException(
-						"Could not make booking at this time, please try again later");
-			}
-		}
-		public final void setMongoConnectionManager(MongoConnectionManager mongoConnectionManager) {
-			this.mongoConnectionManager = mongoConnectionManager;
-		}
+        public Key<BookingDetail> update(BookingDetail bd) {
 
-		// Creates two slots.
-		private void createSlots(List<BookingSlot> bookingSlots) {
+            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+                    BookingDetail.class, mongoConnectionManager.getDb());
 
-			BookingSlot bookingSlot = new BookingSlot();
+            Key<BookingDetail> result = dao.getDatastore().save(bd);
+            return result;
+        }
 
-			bookingSlot.setEnabled(true);
-			bookingSlot.setStartTime("09:00 am");
-			bookingSlot.setEndTime("10:00 am");
+        public void book(Key<BookingDetail> key, String startTime,
+                Customer customer) {
 
-			Consultant consultant = new Consultant();
-			consultant.setName("Peter X");
-			bookingSlot.setConsultant(consultant);
+            int tries = 3;
+            boolean success = false;
 
-			bookingSlots.add(bookingSlot);
+            for (int i = 0; i < tries; i++) {
 
-			bookingSlot = new BookingSlot();
+                try {
 
-			bookingSlot.setEnabled(true);
-			bookingSlot.setStartTime("09:00 am");
-			bookingSlot.setEndTime("10:00 am");
+                    BookingDetail loadedBookingDetail = loadOrCreate(key);
+                    List<BookingSlot> availableSlots = new ArrayList<BookingSlot>();
+                    for (BookingSlot slot : loadedBookingDetail
+                            .getBookingSlot()) {
 
-			consultant = new Consultant();
-			consultant.setName("Tom X");
-			bookingSlot.setConsultant(consultant);
+                        if (slot.getStartTime().equals(startTime)
+                                && slot.getCustomer() == null) {
+                            availableSlots.add(slot);
+                        }
+                    }
 
-			bookingSlots.add(bookingSlot);
+                    if (availableSlots.size() == 0) {
+                        // No available slots left, another user must have
+                        // beaten us to it.
+                        // TODO change to service exception.
+                        throw new RuntimeException("No available slots for xxx");
+                    }
 
-		}
+                    // TODO Logic to choose consultant.
+                    availableSlots.get(0).setCustomer(customer);
+                    logger.log(
+                            Level.FINE,
+                            "Book for customer: " + customer.getName()
+                                    + " version: "
+                                    + loadedBookingDetail.getVersion() + " ...");
+                    update(loadedBookingDetail);
+                    logger.log(Level.FINE, "Booked.");
 
-	}
+                    success = true;
+                    break;
+
+                }
+                catch (ConcurrentModificationException e) {
+                    logger.log(Level.FINE, "Book attempt: " + i
+                            + " failed, another user beat us to it.", e);
+                }
+
+            }
+
+            if (!success) {
+
+                logger.severe("Could not make a booking at this time, please try again later.");
+
+                throw new RuntimeException(
+                        "Could not make booking at this time, please try again later");
+            }
+        }
+
+        public final void setMongoConnectionManager(
+                MongoConnectionManager mongoConnectionManager) {
+            this.mongoConnectionManager = mongoConnectionManager;
+        }
+
+        // Creates two slots.
+        private void createSlots(List<BookingSlot> bookingSlots) {
+
+            BookingSlot bookingSlot = new BookingSlot();
+
+            bookingSlot.setEnabled(true);
+            bookingSlot.setStartTime("09:00 am");
+            bookingSlot.setEndTime("10:00 am");
+
+            Consultant consultant = new Consultant();
+            consultant.setName("Peter X");
+            bookingSlot.setConsultant(consultant);
+
+            bookingSlots.add(bookingSlot);
+
+            bookingSlot = new BookingSlot();
+
+            bookingSlot.setEnabled(true);
+            bookingSlot.setStartTime("09:00 am");
+            bookingSlot.setEndTime("10:00 am");
+
+            consultant = new Consultant();
+            consultant.setName("Tom X");
+            bookingSlot.setConsultant(consultant);
+
+            bookingSlots.add(bookingSlot);
+
+        }
+
+    }
 
 }

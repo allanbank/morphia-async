@@ -618,14 +618,14 @@ public class Mapper {
                 || mf.hasAnnotation(Serialized.class)
                 || mf.isTypeMongoCompatible()
                 || converters.hasSimpleValueConverter(mf))
-            opts.valueMapper.fromDBObject(dbObject, mf, entity, cache, this);
+            opts.valueMapper.fromDocument(dbObject, mf, entity, cache, this);
         else if (mf.hasAnnotation(Embedded.class))
-            opts.embeddedMapper.fromDBObject(dbObject, mf, entity, cache, this);
+            opts.embeddedMapper.fromDocument(dbObject, mf, entity, cache, this);
         else if (mf.hasAnnotation(Reference.class))
             opts.referenceMapper
-                    .fromDBObject(dbObject, mf, entity, cache, this);
+                    .fromDocument(dbObject, mf, entity, cache, this);
         else {
-            opts.defaultMapper.fromDBObject(dbObject, mf, entity, cache, this);
+            opts.defaultMapper.fromDocument(dbObject, mf, entity, cache, this);
         }
     }
 
@@ -652,19 +652,19 @@ public class Mapper {
                 || mf.isTypeMongoCompatible()
                 || (converters.hasSimpleValueConverter(mf) || (converters
                         .hasSimpleValueConverter(mf.getFieldValue(entity)))))
-            opts.valueMapper.toDBObject(entity, mf, dbObject, involvedObjects,
+            opts.valueMapper.toDocument(entity, mf, dbObject, involvedObjects,
                     this);
         else if (Reference.class.equals(annType))
-            opts.referenceMapper.toDBObject(entity, mf, dbObject,
+            opts.referenceMapper.toDocument(entity, mf, dbObject,
                     involvedObjects, this);
         else if (Embedded.class.equals(annType)) {
-            opts.embeddedMapper.toDBObject(entity, mf, dbObject,
+            opts.embeddedMapper.toDocument(entity, mf, dbObject,
                     involvedObjects, this);
         }
         else {
             log.debug("No annotation was found, using default mapper "
                     + opts.defaultMapper + " for " + mf);
-            opts.defaultMapper.toDBObject(entity, mf, dbObject,
+            opts.defaultMapper.toDocument(entity, mf, dbObject,
                     involvedObjects, this);
         }
 

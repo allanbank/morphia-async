@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.DatastoreImpl;
 import com.google.code.morphia.Key;
 import com.google.code.morphia.annotations.Reference;
@@ -31,7 +32,7 @@ import com.mongodb.DBRef;
 class ReferenceMapper implements CustomMapper {
 	public static final Logr log = MorphiaLoggerFactory.get(ReferenceMapper.class);
 	
-	public void toDBObject(Object entity, MappedField mf, DBObject dbObject, Map<Object, DBObject> involvedObjects, Mapper mapr) {
+	public void toDocument(Object entity, MappedField mf, DocumentBuilder builder, Map<Object, Document> involvedObjects, Mapper mapr) {
 		String name = mf.getNameToStore();
 		
 		Object fieldValue = mf.getFieldValue(entity);
@@ -148,10 +149,10 @@ class ReferenceMapper implements CustomMapper {
 	 */
 	@Deprecated
 	void fromDBObject(final DBObject dbObject, final MappedField mf, final Object entity, Mapper mapr) {
-		fromDBObject(dbObject, mf, entity, mapr.createEntityCache(), mapr);
+		fromDocument(dbObject, mf, entity, mapr.createEntityCache(), mapr);
 	}
 
-	public void fromDBObject(final DBObject dbObject, final MappedField mf, final Object entity, EntityCache cache, Mapper mapr) {
+	public void fromDocument(final Document dbObject, final MappedField mf, final Object entity, EntityCache cache, Mapper mapr) {
 		Class fieldType = mf.getType();
 		
 		Reference refAnn = mf.getAnnotation(Reference.class);

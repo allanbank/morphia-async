@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.bson.types.ObjectId;
 import org.junit.Test;

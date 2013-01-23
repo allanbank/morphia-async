@@ -3,49 +3,51 @@
  */
 package com.google.code.morphia;
 
+import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
 
+import com.allanbank.mongodb.MongoClient;
+import com.allanbank.mongodb.MongoDatabase;
+import com.allanbank.mongodb.MongoFactory;
 import com.google.code.morphia.mapping.MappedClass;
-import com.mongodb.DB;
-import com.mongodb.Mongo;
 
-public abstract class TestBase
-{
-    protected Mongo mongo;
-    protected DB db;
+public abstract class TestBase {
+    protected MongoClient mongo;
+    protected MongoDatabase db;
     protected Datastore ds;
     protected AdvancedDatastore ads;
     protected Morphia morphia = new Morphia();
 
     protected TestBase() {
         try {
-			this.mongo = new Mongo();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+            this.mongo = MongoFactory.createClient("mongodb://localhost:27017");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     @Before
-    public void setUp()
-    {
-        this.db = this.mongo.getDB("morphia_test");
+    public void setUp() {
+        this.db = this.mongo.getDatabase("morphia_test");
         this.ds = this.morphia.createDatastore(this.mongo, this.db.getName());
         this.ads = (AdvancedDatastore) ds;
-        //ads.setDecoderFact(LazyDBDecoder.FACTORY);
+        // ads.setDecoderFact(LazyDBDecoder.FACTORY);
     }
-	
+
     protected void cleanup() {
-        //this.mongo.dropDatabase("morphia_test");
-		for(MappedClass mc : morphia.getMapper().getMappedClasses())
-//			if( mc.getEntityAnnotation() != null )
-				db.getCollection(mc.getCollectionName()).drop();
-    	
+        // this.mongo.dropDatabase("morphia_test");
+        for (MappedClass mc : morphia.getMapper().getMappedClasses())
+            // if( mc.getEntityAnnotation() != null )
+            db.getCollection(mc.getCollectionName()).drop();
+
     }
-    
-	@After
-	public void tearDown() {
-    	cleanup();
-		mongo.close();
-	}
+
+    @After
+    public void tearDown() throws IOException {
+        cleanup();
+        mongo.close();
+    }
 }

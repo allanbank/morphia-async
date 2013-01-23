@@ -39,7 +39,6 @@ import com.google.code.morphia.logging.Logr;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
 import com.google.code.morphia.mapping.validation.MappingValidator;
 import com.google.code.morphia.utils.ReflectionUtils;
-import com.mongodb.DBObject;
 
 /**
  * Represents a mapped class between the MongoDB DBObject and the java POJO.

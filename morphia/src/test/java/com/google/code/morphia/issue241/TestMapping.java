@@ -2,7 +2,7 @@ package com.google.code.morphia.issue241;
 
 import java.net.UnknownHostException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
