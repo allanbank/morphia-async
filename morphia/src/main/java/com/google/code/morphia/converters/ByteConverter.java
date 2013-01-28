@@ -1,23 +1,37 @@
-/**
+/*
+ *         Copyright 2013 Uwe Schaefer, Scott Hernandez 
+ *               and Allanbank Consulting, Inc.
  * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.google.code.morphia.converters;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
 import com.allanbank.mongodb.bson.NumericElement;
-import com.allanbank.mongodb.bson.element.StringElement;
-import com.allanbank.mongodb.bson.element.SymbolElement;
-import com.google.code.morphia.mapping.MappedField;
+import com.allanbank.mongodb.bson.element.IntegerElement;
+import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
+ * Converter for and from Byte values.
+ * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
+ * @author Scott Hernandez
+ * @copyright 2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
+ *            All Rights Reserved
  */
-@SuppressWarnings({ "rawtypes" })
-public class ByteConverter extends TypeConverter<Byte> implements
-        SimpleValueConverter {
+public class ByteConverter extends AbstractConverter<Byte> {
     /**
      * Creates a new ByteConverter.
      */
@@ -25,26 +39,43 @@ public class ByteConverter extends TypeConverter<Byte> implements
         super(Byte.class, byte.class);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link IntegerElement}.
+     * </p>
+     */
     @Override
-    public Byte decode(Class targetClass, Element val,
-            MappedField optionalExtraInfo) throws MappingException {
-        if ((val == null) || (val.getType() == ElementType.NULL)) {
+    public Element toElement(Class<?> mappingType, String name, Byte object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new IntegerElement(name, object.intValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return the element's value as a Byte.
+     * </p>
+     */
+    @Override
+    public Byte fromElement(Class<?> mappingType, Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
-        else if (val instanceof NumericElement) {
-            // handle the case for things like the ok field
-            return Byte.valueOf((byte) ((NumericElement) val).getIntValue());
+        else if (element instanceof NumericElement) {
+            return Byte
+                    .valueOf((byte) ((NumericElement) element).getIntValue());
         }
-        else if (val.getType() == ElementType.STRING) {
-            String sVal = ((StringElement) val).getValue();
-            return Byte.valueOf(Byte.parseByte(sVal));
-        }
-        else if (val.getType() == ElementType.SYMBOL) {
-            String sVal = ((SymbolElement) val).getSymbol();
+        // Handle string for cases of the value actually being the key.
+        else if ((element.getType() == ElementType.STRING)
+                || (element.getType() == ElementType.SYMBOL)) {
+            String sVal = element.getValueAsString();
             return Byte.valueOf(Byte.parseByte(sVal));
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + val.getClass().getSimpleName() + " into a byte.");
+                + element.getClass().getSimpleName() + " into a byte.");
     }
 }

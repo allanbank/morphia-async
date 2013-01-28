@@ -1,5 +1,18 @@
-/**
+/*
+ *         Copyright 2013 Uwe Schaefer, Scott Hernandez 
+ *               and Allanbank Consulting, Inc.
  * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.google.code.morphia.converters;
 
@@ -7,18 +20,18 @@ import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
 import com.allanbank.mongodb.bson.NumericElement;
 import com.allanbank.mongodb.bson.element.BooleanElement;
-import com.allanbank.mongodb.bson.element.StringElement;
-import com.allanbank.mongodb.bson.element.SymbolElement;
-import com.google.code.morphia.mapping.MappedField;
+import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
+ * Converter to and from Boolean values.
+ * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
+ * @author Scott Hernandez
+ * @copyright 2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
+ *            All Rights Reserved
  */
-@SuppressWarnings({ "rawtypes" })
-public class BooleanConverter extends TypeConverter<Boolean> implements
-        SimpleValueConverter {
+public class BooleanConverter extends AbstractConverter<Boolean> {
 
     /**
      * Creates a new BooleanConverter.
@@ -27,29 +40,47 @@ public class BooleanConverter extends TypeConverter<Boolean> implements
         super(boolean.class, Boolean.class);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link BooleanElement}.
+     * </p>
+     */
     @Override
-    public Boolean decode(Class targetClass, Element val,
-            MappedField optionalExtraInfo) throws MappingException {
-        if ((val == null) || (val.getType() == ElementType.NULL)) {
+    public Element toElement(Class<?> mappingType, String name, Boolean object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new BooleanElement(name, object.booleanValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code ellement} into a {@link Boolean} value.
+     * </p>
+     */
+    @Override
+    public Boolean fromElement(Class<?> mappingType, Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
-        else if (val.getType() == ElementType.BOOLEAN) {
-            return Boolean.valueOf(((BooleanElement) val).getValue());
+        else if (element.getType() == ElementType.BOOLEAN) {
+            return Boolean.valueOf(((BooleanElement) element).getValue());
         }
-        else if (val instanceof NumericElement) {
+        else if (element instanceof NumericElement) {
             // handle the case for things like the ok field
-            return Boolean.valueOf(((NumericElement) val).getIntValue() != 0);
+            return Boolean
+                    .valueOf(((NumericElement) element).getIntValue() != 0);
         }
-        else if (val.getType() == ElementType.STRING) {
-            String sVal = ((StringElement) val).getValue();
-            return Boolean.valueOf(Boolean.parseBoolean(sVal));
-        }
-        else if (val.getType() == ElementType.SYMBOL) {
-            String sVal = ((SymbolElement) val).getSymbol();
+        // Handle strings for cases when the boolean is the key
+        else if ((element.getType() == ElementType.STRING)
+                || (element.getType() == ElementType.SYMBOL)) {
+            String sVal = element.getValueAsString();
             return Boolean.valueOf(Boolean.parseBoolean(sVal));
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + val.getClass().getSimpleName() + " into a boolean.");
+                + element.getClass().getSimpleName() + " into a boolean.");
     }
 }

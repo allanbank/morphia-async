@@ -1,5 +1,6 @@
 /*
- *  Copyright 2010 gauti.
+ *         Copyright 2010-2013  Olafur Gauti Gudmundsson, 
+ *           Scott Hernandez and Allanbank Consulting, Inc.
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package com.google.code.morphia.annotations;
 
 import java.lang.annotation.Retention;
@@ -24,11 +24,14 @@ import java.lang.annotation.RetentionPolicy;
  * Properties for capped collections; used in {@link Entity}
  * 
  * @author Scott Hernandez
+ * @copyright 2010-2013, Olafur Gauti Gudmundsson, Scott Hernandez and Allanbank
+ *            Consulting, Inc., All Rights Reserved
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CappedAt {
-	/** size to cap at (defaults to 1MB) */
-	long value() default 1024*1024;
-	/** count of items to cap at (defaults to unlimited) */
-	long count() default 0;
+    /** Size to cap at (defaults to 1MB) */
+    long value() default 1024 * 1024;
+
+    /** Count of items to cap at (defaults to unlimited) */
+    long count() default 0;
 }

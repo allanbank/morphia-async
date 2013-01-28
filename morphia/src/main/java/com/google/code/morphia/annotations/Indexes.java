@@ -1,5 +1,6 @@
 /*
- *  Copyright 2010 gauti.
+ *         Copyright 2010-2013  Olafur Gauti Gudmundsson,
+ *         Scott Hernandez, and Allanbank Consulting, Inc.
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package com.google.code.morphia.annotations;
 
 import java.lang.annotation.Documented;
@@ -26,11 +26,16 @@ import java.lang.annotation.Target;
 
 /**
  * Defines indexes for this entity type (on the collection)
+ * 
  * @author Scott Hernandez
+ * @copyright 2010-2013, Olafur Gauti Gudmundsson, Scott Hernandez and Allanbank
+ *            Consulting, Inc., All Rights Reserved
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 public @interface Indexes {
-	Index[] value();
+    /** The indexes to create. */
+    Index[] value();
 }

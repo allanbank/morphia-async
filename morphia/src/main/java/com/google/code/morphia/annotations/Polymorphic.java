@@ -1,5 +1,6 @@
 /*
- *  Copyright 2010 Olafur Gauti Gudmundsson.
+ *         Copyright 2010-2013  Olafur Gauti Gudmundsson, 
+ *                  and Allanbank Consulting, Inc.
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package com.google.code.morphia.annotations;
 
 import java.lang.annotation.Documented;
@@ -25,14 +25,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies that this class is part of an inheritance structure.
- * This implies that we have to store the full class name in the Mongo
- * object.
- *
+ * Specifies that this class is part of an inheritance structure. This implies
+ * that we have to store the full class name in the Mongo object.
+ * 
  * @author Olafur Gauti Gudmundsson
+ * @copyright 2010-2013, Olafur Gauti Gudmundsson and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 public @interface Polymorphic {
+    // Marker.
 }
