@@ -420,7 +420,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     private <T> Query<T> queryByExample(MongoCollection coll, T example) {
         // TODO: think about remove className from baseQuery param below.
         return new QueryImpl<T>((Class<T>) example.getClass(), coll, this,
-                entityToDBObj(example, new HashMap<Object, DBObject>()));
+                entityToDBObj(example, new HashMap<Object, Document>()));
 
     }
 
@@ -428,11 +428,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return new QueryImpl<T>(clazz, getCollection(clazz), this);
     }
 
-    public <T> Query<T> createQuery(Class<T> kind, DBObject q) {
+    public <T> Query<T> createQuery(Class<T> kind, Document q) {
         return new QueryImpl<T>(kind, getCollection(kind), this, q);
     }
 
-    public <T> Query<T> createQuery(String kind, Class<T> clazz, DBObject q) {
+    public <T> Query<T> createQuery(String kind, Class<T> clazz, Document q) {
         return new QueryImpl<T>(clazz, db.getCollection(kind), this, q);
     }
 
@@ -679,10 +679,10 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     private <T> Iterable<Key<T>> insert(MongoCollection dbColl,
             Iterable<T> entities, Durability wc) {
-        ArrayList<DBObject> ents = entities instanceof List ? new ArrayList<DBObject>(
-                ((List<T>) entities).size()) : new ArrayList<DBObject>();
+        ArrayList<Document> ents = entities instanceof List ? new ArrayList<Document>(
+                ((List<T>) entities).size()) : new ArrayList<Document>();
 
-        Map<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
+        Map<Object, Document> involvedObjects = new LinkedHashMap<Object, Document>();
         for (T ent : entities) {
             MappedClass mc = mapr.getMappedClass(ent);
             if (mc.getAnnotation(NotSaved.class) != null)

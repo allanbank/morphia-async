@@ -11,6 +11,7 @@
 
 package com.google.code.morphia.mapping;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -31,6 +32,7 @@ import com.allanbank.mongodb.bson.DocumentReference;
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.builder.BuilderFactory;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
+import com.allanbank.mongodb.bson.io.BsonOutputStream;
 import com.google.code.morphia.EntityInterceptor;
 import com.google.code.morphia.Key;
 import com.google.code.morphia.annotations.Converters;
@@ -244,7 +246,7 @@ public class Mapper {
      * @param dbObj
      *            Value to update with; null means skip
      */
-    public void updateKeyInfo(final Object entity, final DBObject dbObj,
+    public void updateKeyInfo(final Object entity, final Document dbObj,
             EntityCache cache) {
         MappedClass mc = getMappedClass(entity);
 
@@ -315,6 +317,7 @@ public class Mapper {
      * </p>
      */
     Object toMongoObject(Object javaObj, boolean includeClassName) {
+        DocumentBuilder builder = BuilderFactory.start();
         if (javaObj == null) {
             return null;
         }
@@ -323,7 +326,8 @@ public class Mapper {
         if (origClass.isAnonymousClass() && origClass.getSuperclass().isEnum())
             origClass = origClass.getSuperclass();
 
-        Object newObj = converters.encode(origClass, javaObj);
+        converters.encode(builder, origClass, javaObj, "fake", null);
+        Object newObj = builder.build().get("fake").getValueAsObject();
         if (newObj == null) {
             log.warning("converted " + javaObj + " to null");
             return newObj;
@@ -355,12 +359,15 @@ public class Mapper {
             }
 
             if (isSingleValue && !ReflectionUtils.isPropertyType(type)) {
-                DBObject dbObj = toDBObject(newObj);
-                if (!includeClassName)
-                    dbObj.removeField(CLASS_NAME_FIELDNAME);
+                Document dbObj = toDBObject(newObj);
+                if (!includeClassName) {
+                    DocumentBuilder b = BuilderFactory.start(dbObj);
+                    b.remove(CLASS_NAME_FIELDNAME);
+                    dbObj = b.build();
+                }
                 return dbObj;
             }
-            else if (newObj instanceof DBObject) {
+            else if (newObj instanceof Document) {
                 return newObj;
             }
             else if (isMap) {
@@ -406,23 +413,24 @@ public class Mapper {
     public Object toMongoObject(MappedField mf, MappedClass mc, Object value) {
         Object mappedValue = value;
 
-        // convert the value to Key (DBRef) if the field is @Reference or type
-        // is Key/DBRef, or if the destination class is an @Entity
+        // convert the value to Key (DocumentReference) if the field is
+        // @Reference or type
+        // is Key/DocumentReference, or if the destination class is an @Entity
         if ((mf != null && (mf.hasAnnotation(Reference.class)
                 || mf.getType().isAssignableFrom(Key.class)
-                || mf.getType().isAssignableFrom(DBRef.class) ||
+                || mf.getType().isAssignableFrom(DocumentReference.class) ||
         // Collection/Array/???
         (value instanceof Iterable && mf.isMultipleValues() && (mf
                 .getSubClass().isAssignableFrom(Key.class) || mf.getSubClass()
-                .isAssignableFrom(DBRef.class)))))
+                .isAssignableFrom(DocumentReference.class)))))
                 || (mc != null && mc.getEntityAnnotation() != null)) {
             try {
                 if (value instanceof Iterable) {
-                    ArrayList<DBRef> refs = new ArrayList<DBRef>();
+                    ArrayList<DocumentReference> refs = new ArrayList<DocumentReference>();
                     Iterable it = (Iterable) value;
                     for (Object o : it) {
                         Key<?> k = (o instanceof Key) ? (Key<?>) o : getKey(o);
-                        DBRef dbref = keyToRef(k);
+                        DocumentReference dbref = keyToRef(k);
                         refs.add(dbref);
                     }
                     mappedValue = refs;
@@ -436,7 +444,7 @@ public class Mapper {
                     mappedValue = keyToRef(k);
                     if (mappedValue == value)
                         throw new ValidationException(
-                                "cannnot map to @Reference/Key<T>/DBRef field: "
+                                "cannnot map to @Reference/Key<T>/DocumentReference field: "
                                         + value);
                 }
             }
@@ -457,15 +465,19 @@ public class Mapper {
                 throw new RuntimeException(e);
             }
         // pass-through
-        else if (value instanceof DBObject)
+        else if (value instanceof Document)
             mappedValue = value;
         else {
             mappedValue = toMongoObject(value,
                     EmbeddedMapper.shouldSaveClassName(value, mappedValue, mf));
-            if (mappedValue instanceof DBObject
+            if (mappedValue instanceof Document
                     && !EmbeddedMapper.shouldSaveClassName(value, mappedValue,
-                            mf))
-                ((DBObject) mappedValue).removeField(CLASS_NAME_FIELDNAME);
+                            mf)) {
+                DocumentBuilder b = BuilderFactory
+                        .start((Document) mappedValue);
+                b.remove(CLASS_NAME_FIELDNAME);
+                mappedValue = b.build();
+            }
         }
 
         return mappedValue;
@@ -548,8 +560,8 @@ public class Mapper {
             dbObject.add(CLASS_NAME_FIELDNAME, entity.getClass().getName());
 
         if (lifecycle)
-            dbObject = (DBObject) mc.callLifecycleMethods(PrePersist.class,
-                    entity, dbObject, this);
+            dbObject = mc.callLifecycleMethods(PrePersist.class, entity,
+                    dbObject, this);
 
         for (MappedField mf : mc.getPersistenceFields()) {
             try {
@@ -561,15 +573,15 @@ public class Mapper {
             }
         }
         if (involvedObjects != null)
-            involvedObjects.put(entity, dbObject);
+            involvedObjects.put(entity, dbObject.build());
 
         if (lifecycle)
             mc.callLifecycleMethods(PreSave.class, entity, dbObject, this);
 
-        return dbObject;
+        return dbObject.build();
     }
 
-    Object fromDb(DBObject dbObject, Object entity, EntityCache cache) {
+    Object fromDb(Document dbObject, Object entity, EntityCache cache) {
         // hack to bypass things and just read the value.
         if (entity instanceof MappedField) {
             readMappedField(dbObject, (MappedField) entity, entity, cache);
@@ -578,7 +590,7 @@ public class Mapper {
 
         // check the history key (a key is the namespace + id)
 
-        if (dbObject.containsField(ID_KEY)
+        if ((dbObject.get(ID_KEY) != null)
                 && getMappedClass(entity).getIdField() != null
                 && getMappedClass(entity).getEntityAnnotation() != null) {
             Key key = new Key(entity.getClass(), dbObject.get(ID_KEY));
@@ -591,9 +603,10 @@ public class Mapper {
         }
 
         MappedClass mc = getMappedClass(entity);
-
-        dbObject = (DBObject) mc.callLifecycleMethods(PreLoad.class, entity,
-                dbObject, this);
+        DocumentBuilder builder = BuilderFactory.start(dbObject);
+        dbObject = mc
+                .callLifecycleMethods(PreLoad.class, entity, builder, this)
+                .build();
         try {
             for (MappedField mf : mc.getPersistenceFields()) {
                 readMappedField(dbObject, mf, entity, cache);
@@ -603,16 +616,17 @@ public class Mapper {
             throw new RuntimeException(e);
         }
 
-        if (dbObject.containsField(ID_KEY)
+        if ((dbObject.get(ID_KEY) != null)
                 && getMappedClass(entity).getIdField() != null) {
             Key key = new Key(entity.getClass(), dbObject.get(ID_KEY));
             cache.putEntity(key, entity);
         }
-        mc.callLifecycleMethods(PostLoad.class, entity, dbObject, this);
+        builder = BuilderFactory.start(dbObject);
+        mc.callLifecycleMethods(PostLoad.class, entity, builder, this);
         return entity;
     }
 
-    private void readMappedField(DBObject dbObject, MappedField mf,
+    private void readMappedField(Document dbObject, MappedField mf,
             Object entity, EntityCache cache) {
         if (mf.hasAnnotation(Property.class)
                 || mf.hasAnnotation(Serialized.class)
@@ -629,8 +643,8 @@ public class Mapper {
         }
     }
 
-    private void writeMappedField(DBObject dbObject, MappedField mf,
-            Object entity, Map<Object, DBObject> involvedObjects) {
+    private void writeMappedField(DocumentBuilder dbObject, MappedField mf,
+            Object entity, Map<Object, Document> involvedObjects) {
         Class<? extends Annotation> annType = null;
 
         // skip not saved fields.
@@ -718,8 +732,15 @@ public class Mapper {
 
         // TODO: cache the encoders, maybe use the pool version of the buffer
         // that the driver does.
-        BSONEncoder enc = new BasicBSONEncoder();
-        return new Key<T>(clazz, enc.encode(toDBObject(id)));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        BsonOutputStream bout = new BsonOutputStream(out);
+        try {
+            bout.writeDocument(toDBObject(id));
+            return new Key<T>(clazz, out.toByteArray());
+        }
+        catch (IOException ioe) {
+            throw new MappingException(ioe.getMessage());
+        }
     }
 
     /**

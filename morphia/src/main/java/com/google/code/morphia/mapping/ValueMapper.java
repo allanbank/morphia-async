@@ -5,7 +5,6 @@ import java.util.Map;
 import com.allanbank.mongodb.bson.Document;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.mapping.cache.EntityCache;
-import com.mongodb.DBObject;
 
 /**
  * Simple mapper that just uses the Mapper.getOptions().converts
@@ -15,7 +14,7 @@ import com.mongodb.DBObject;
 class ValueMapper implements CustomMapper {
 	public void toDocument(Object entity, MappedField mf, DocumentBuilder builder, Map<Object, Document> involvedObjects, Mapper mapr) {
 		try {
-			mapr.converters.toDBObject(entity, mf, dbObject, mapr.getOptions());
+			mapr.converters.toDBObject(entity, mf, builder, mapr.getOptions());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
