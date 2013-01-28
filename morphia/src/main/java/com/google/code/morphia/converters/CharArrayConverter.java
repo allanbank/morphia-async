@@ -1,5 +1,5 @@
 /*
- *         Copyright 2013 Uwe Schaefer, Scott Hernandez 
+ *         Copyright 2010-2013 Uwe Schaefer, Scott Hernandez 
  *               and Allanbank Consulting, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,8 +27,8 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author scotthernandez
- * @copyright 2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
- *            All Rights Reserved
+ * @copyright 2010-2013, Uwe Schaefer, scotthernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
 public class CharArrayConverter extends AbstractConverter<char[]> {
 
@@ -72,6 +72,6 @@ public class CharArrayConverter extends AbstractConverter<char[]> {
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + element.getClass().getSimpleName() + " into a char.");
+                + element.getClass().getSimpleName() + " into a char[].");
     }
 }

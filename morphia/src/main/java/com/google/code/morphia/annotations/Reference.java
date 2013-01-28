@@ -24,9 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.allanbank.mongodb.bson.DocumentReference;
 import com.google.code.morphia.mapping.Mapper;
 
 /**
+ * Indicates that the field should be stored as a {@link DocumentReference} or
+ * {@code DBRef}.
  * 
  * @author Olafur Gauti Gudmundsson
  * @author Scott Hernandez

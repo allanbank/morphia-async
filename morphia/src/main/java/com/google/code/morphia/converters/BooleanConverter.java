@@ -1,5 +1,5 @@
 /*
- *         Copyright 2013 Uwe Schaefer, Scott Hernandez 
+ *         Copyright 2010-2013 Uwe Schaefer, Scott Hernandez 
  *               and Allanbank Consulting, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,8 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
- * @copyright 2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
- *            All Rights Reserved
+ * @copyright 2010-2013, Uwe Schaefer, scotthernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
 public class BooleanConverter extends AbstractConverter<Boolean> {
 

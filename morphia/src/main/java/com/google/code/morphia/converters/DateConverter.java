@@ -1,27 +1,44 @@
-/**
+/*
+ *         Copyright 2010-2013 Uwe Schaefer, Scott Hernandez
+ *                   and Allanbank Consulting, Inc.
  * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ * 
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  under the License.
  */
 package com.google.code.morphia.converters;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
 import com.allanbank.mongodb.bson.NumericElement;
-import com.allanbank.mongodb.bson.builder.DocumentBuilder;
-import com.allanbank.mongodb.bson.element.StringElement;
-import com.allanbank.mongodb.bson.element.SymbolElement;
+import com.allanbank.mongodb.bson.element.NullElement;
 import com.allanbank.mongodb.bson.element.TimestampElement;
-import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
+ * Converts to and from a {@link Date} object.
+ * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
+ * @author Scott Hernandez
  */
-@SuppressWarnings({ "rawtypes" })
-public class DateConverter extends TypeConverter<Date> implements
-        SimpleValueConverter {
+public class DateConverter extends AbstractConverter<Date> {
+
+    /** The default timezone when forced to parse a time. */
+    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     /**
      * Creates a new DateConverter.
@@ -40,44 +57,57 @@ public class DateConverter extends TypeConverter<Date> implements
         super(clazz);
     }
 
-    @SuppressWarnings("deprecation")
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link TimestampElement}.
+     * </p>
+     */
     @Override
-    public Date decode(Class targetClass, Element val,
-            MappedField optionalExtraInfo) throws MappingException {
-        if ((val == null) || (val.getType() == ElementType.NULL)) {
+    public Element toElement(Class<?> mappingType, String name, Date object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new TimestampElement(name, object.getTime());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return the element's value as a {@link Date}.
+     * </p>
+     */
+    @Override
+    public Date fromElement(Class<?> mappingType, Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
-        else if (val.getType() == ElementType.UTC_TIMESTAMP) {
-            long ts = ((TimestampElement) val).getTime();
+        else if (element.getType() == ElementType.UTC_TIMESTAMP) {
+            long ts = ((TimestampElement) element).getTime();
             return new Date(ts);
         }
-        else if (val instanceof NumericElement) {
-            long ts = ((NumericElement) val).getLongValue();
+        else if (element instanceof NumericElement) {
+            long ts = ((NumericElement) element).getLongValue();
             return new Date(ts);
         }
-        else if (val.getType() == ElementType.STRING) {
-            String sVal = ((StringElement) val).getValue();
-            return new Date(Date.parse(sVal));// good luck
-        }
-        else if (val.getType() == ElementType.SYMBOL) {
-            String sVal = ((SymbolElement) val).getSymbol();
-            return new Date(Date.parse(sVal));// good luck
+        else if ((element.getType() == ElementType.STRING)
+                || (element.getType() == ElementType.SYMBOL)) {
+            String sVal = element.getValueAsString();
+
+            SimpleDateFormat sdf = new SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            sdf.setTimeZone(UTC);
+
+            try {
+                return sdf.parse(sVal);
+            }
+            catch (ParseException e) {
+                throw new MappingException("Invalid date string name '" + sVal
+                        + "'.", e);
+            }
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + val.getClass().getSimpleName() + " into a Date.");
+                + element.getClass().getSimpleName() + " into a Date.");
     }
-
-    @Override
-    public void encode(DocumentBuilder builder, String name, Date value,
-            MappedField optionalExtraInfo) {
-
-        if (value == null) {
-            builder.addNull(name);
-        }
-        else {
-            builder.addTimestamp(name, value.getTime());
-        }
-    }
-
 }

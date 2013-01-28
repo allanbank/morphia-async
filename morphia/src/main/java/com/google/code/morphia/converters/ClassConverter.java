@@ -1,5 +1,5 @@
 /*
- *         Copyright 2013 Uwe Schaefer, Scott Hernandez 
+ *         Copyright 2010-2013 Uwe Schaefer, Scott Hernandez 
  *               and Allanbank Consulting, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,23 +18,19 @@ package com.google.code.morphia.converters;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
-import com.allanbank.mongodb.bson.builder.DocumentBuilder;
+import com.allanbank.mongodb.bson.element.NullElement;
 import com.allanbank.mongodb.bson.element.StringElement;
-import com.allanbank.mongodb.bson.element.SymbolElement;
-import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
  * Converter for and from {@link Class} values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
- * @copyright 2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
- *            All Rights Reserved
+ * @author Scott Hernandez
+ * @copyright 2010-2013, Uwe Schaefer, scotthernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
-@SuppressWarnings({ "rawtypes" })
-public class ClassConverter extends TypeConverter<Class<?>> implements
-        SimpleValueConverter {
+public class ClassConverter extends AbstractConverter<Class<?>> {
 
     /**
      * Creates a new ClassConverter.
@@ -43,43 +39,45 @@ public class ClassConverter extends TypeConverter<Class<?>> implements
         super(Class.class);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
     @Override
-    public Class<?> decode(Class targetClass, Element val,
-            MappedField optionalExtraInfo) throws MappingException {
-        if ((val == null) || (val.getType() == ElementType.NULL)) {
+    public Element toElement(Class<?> mappingType, String name, Class<?> object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, object.getCanonicalName());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return the element's value as a {@link Class}.
+     * </p>
+     */
+    @Override
+    public Class<?> fromElement(Class<?> mappingType, Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
+        else if ((element.getType() == ElementType.STRING)
+                || (element.getType() == ElementType.SYMBOL)) {
+            String sVal = element.getValueAsString();
 
-        String name = null;
-        if (val.getType() == ElementType.STRING) {
-            name = ((StringElement) val).getValue();
-        }
-        else if (val.getType() == ElementType.SYMBOL) {
-            name = ((SymbolElement) val).getSymbol();
-        }
-
-        if (name != null) {
             try {
-                return Class.forName(name);
+                return Class.forName(sVal);
             }
             catch (ClassNotFoundException e) {
-                throw new MappingException("Cannot create class from name '"
-                        + name + "'", e);
+                throw new MappingException(
+                        "Invalid class name '" + sVal + "'.", e);
             }
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + val.getClass().getSimpleName() + " into a Class.");
-    }
-
-    @Override
-    public void encode(DocumentBuilder builder, String name, Class<?> value,
-            MappedField optionalExtraInfo) {
-        if (value == null) {
-            builder.addNull(optionalExtraInfo.getNameToStore());
-        }
-        else {
-            builder.add(name, value.getName());
-        }
+                + element.getClass().getSimpleName() + " into a Class.");
     }
 }
