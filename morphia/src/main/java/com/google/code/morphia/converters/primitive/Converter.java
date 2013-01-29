@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.code.morphia.converters;
+package com.google.code.morphia.converters.primitive;
 
 import com.allanbank.mongodb.bson.Element;
 

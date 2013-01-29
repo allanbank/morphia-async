@@ -21,6 +21,8 @@ package com.google.code.morphia.converters;
  * Provides notification that a convert is not available for a type.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
+ * @copyright 2010-2013, Uwe Schaefer and Allanbank Consulting, Inc., All Rights
+ *            Reserved
  */
 public class ConverterNotFoundException extends RuntimeException {
 

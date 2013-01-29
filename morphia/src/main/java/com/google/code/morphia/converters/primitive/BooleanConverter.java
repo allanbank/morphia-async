@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.code.morphia.converters;
+package com.google.code.morphia.converters.primitive;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
@@ -28,7 +28,7 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
- * @copyright 2010-2013, Uwe Schaefer, scotthernandez and Allanbank Consulting,
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
 public class BooleanConverter extends AbstractConverter<Boolean> {

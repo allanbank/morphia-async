@@ -15,7 +15,7 @@
  *  limitations under the License.
  *  under the License.
  */
-package com.google.code.morphia.converters;
+package com.google.code.morphia.converters.primitive;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,11 +34,16 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
 public class DateConverter extends AbstractConverter<Date> {
 
     /** The default timezone when forced to parse a time. */
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+
+    /** The standard format expected for a date string. */
+    public static final String FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
     /**
      * Creates a new DateConverter.
@@ -94,8 +99,7 @@ public class DateConverter extends AbstractConverter<Date> {
                 || (element.getType() == ElementType.SYMBOL)) {
             String sVal = element.getValueAsString();
 
-            SimpleDateFormat sdf = new SimpleDateFormat(
-                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
             sdf.setTimeZone(UTC);
 
             try {

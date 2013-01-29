@@ -14,65 +14,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.code.morphia.converters;
+package com.google.code.morphia.converters.primitive;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
+import com.allanbank.mongodb.bson.NumericElement;
+import com.allanbank.mongodb.bson.element.IntegerElement;
 import com.allanbank.mongodb.bson.element.NullElement;
-import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter for and from Character values.
+ * Converter for and from Byte values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
- * @copyright 2010-2013, Uwe Schaefer, scotthernandez and Allanbank Consulting, Inc.,
+ * @author Scott Hernandez
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting, Inc.,
  *            All Rights Reserved
  */
-public class CharacterConverter extends AbstractConverter<Character> {
+public class ByteConverter extends AbstractConverter<Byte> {
     /**
-     * Creates a new CharacterConverter.
+     * Creates a new ByteConverter.
      */
-    public CharacterConverter() {
-        super(Character.class, char.class);
+    public ByteConverter() {
+        super(Byte.class, byte.class);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * Overridden to convert the {@code object} into a {@link IntegerElement}.
      * </p>
      */
     @Override
-    public Element toElement(Class<?> mappingType, String name, Character object) {
+    public Element toElement(Class<?> mappingType, String name, Byte object) {
         if (object == null) {
             return new NullElement(name);
         }
-        return new StringElement(name, String.valueOf(object.charValue()));
+        return new IntegerElement(name, object.intValue());
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to return the element's value as a {@link Character}.
+     * Overridden to return the element's value as a Byte.
      * </p>
      */
     @Override
-    public Character fromElement(Class<?> mappingType, Element element) {
+    public Byte fromElement(Class<?> mappingType, Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
+        else if (element instanceof NumericElement) {
+            return Byte
+                    .valueOf((byte) ((NumericElement) element).getIntValue());
+        }
+        // Handle string for cases of the value actually being the key.
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
             String sVal = element.getValueAsString();
-            if (sVal.isEmpty()) {
-                return null;
-            }
-            return Character.valueOf(sVal.charAt(0));
+            return Byte.valueOf(Byte.parseByte(sVal));
         }
 
         throw new MappingException("Could not figure out how to map a "
-                + element.getClass().getSimpleName() + " into a char.");
+                + element.getClass().getSimpleName() + " into a byte.");
     }
 }
