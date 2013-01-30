@@ -25,14 +25,14 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from short values.
+ * FieldConverter to and from short values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class ShortConverter extends AbstractConverter<Short> {
+public class ShortConverter extends AbstractBasicFieldConverter<Short> {
     /**
      * Creates a new ShortConverter.
      */

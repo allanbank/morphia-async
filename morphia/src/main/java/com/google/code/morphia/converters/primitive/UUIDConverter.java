@@ -36,7 +36,7 @@ import com.google.code.morphia.mapping.MappingException;
  * @copyright 2010-2013, stummb, Scott Hernandez and Allanbank Consulting, Inc.,
  *            All Rights Reserved
  */
-public class UUIDConverter extends AbstractConverter<UUID> {
+public class UUIDConverter extends AbstractBasicFieldConverter<UUID> {
 
     /**
      * Creates a new UUIDConverter.

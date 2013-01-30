@@ -1,5 +1,5 @@
 /*
- *         Copyright 2013 Allanbank Consulting, Inc.
+ *         Copyright 2010-2013 Allanbank Consulting, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 
 /**
- * Contains the converters for the primative types and those that can 
- * be easily coerced into a primitive type.
+ * package-info provides TODO - Finish
  * 
  * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-package com.google.code.morphia.converters.primitive;
+package com.google.code.morphia.state;

@@ -23,14 +23,14 @@ import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter for and from Character values.
+ * FieldConverter for and from Character values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting, Inc.,
  *            All Rights Reserved
  */
-public class CharacterConverter extends AbstractConverter<Character> {
+public class CharacterConverter extends AbstractBasicFieldConverter<Character> {
     /**
      * Creates a new CharacterConverter.
      */

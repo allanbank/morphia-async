@@ -25,14 +25,14 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from double values.
+ * FieldConverter to and from double values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class DoubleConverter extends AbstractConverter<Double> {
+public class DoubleConverter extends AbstractBasicFieldConverter<Double> {
 
     /**
      * Creates a new DoubleConverter.

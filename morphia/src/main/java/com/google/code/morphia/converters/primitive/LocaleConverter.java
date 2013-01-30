@@ -27,14 +27,14 @@ import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from {@link Locale} values.
+ * FieldConverter to and from {@link Locale} values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class LocaleConverter extends AbstractConverter<Locale> {
+public class LocaleConverter extends AbstractBasicFieldConverter<Locale> {
 
     /**
      * Creates a new LocaleConverter.

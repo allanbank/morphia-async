@@ -30,7 +30,7 @@ import com.google.code.morphia.converters.primitive.ByteArrayConverter;
 import com.google.code.morphia.converters.primitive.CharArrayConverter;
 import com.google.code.morphia.converters.primitive.CharacterConverter;
 import com.google.code.morphia.converters.primitive.ClassConverter;
-import com.google.code.morphia.converters.primitive.Converter;
+import com.google.code.morphia.converters.primitive.BasicFieldConverter;
 import com.google.code.morphia.converters.primitive.DateConverter;
 import com.google.code.morphia.converters.primitive.DoubleArrayConverter;
 import com.google.code.morphia.converters.primitive.DoubleConverter;
@@ -49,25 +49,28 @@ import com.google.code.morphia.converters.primitive.StringConverter;
 import com.google.code.morphia.converters.primitive.TimestampConverter;
 import com.google.code.morphia.converters.primitive.URIConverter;
 import com.google.code.morphia.converters.primitive.UUIDConverter;
+import com.google.code.morphia.state.MappedField;
+import com.google.code.morphia.state.MappedClass;
 
 /**
- * PrimititveConverter provides a standard converter for the primative types.
+ * PrimitiveFieldConverter provides a standard converter for the primitive
+ * types.
  * 
  * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class PrimititveConverter {
+public class PrimitiveFieldConverter implements FieldConverter<Object> {
 
     /** The list of primitive converters to delegate to. */
-    private static final List<Converter<?>> ourConverters;
+    private static final List<BasicFieldConverter<?>> ourConverters;
 
     /** Cache of the type names that are not convertable by this class. */
     private static final Set<String> ourNonPrimitiveTypes;
 
     /** The cache byt type name of the converter to use. */
-    private static final ConcurrentMap<String, Converter<Object>> ourConverterByType;
+    private static final ConcurrentMap<String, BasicFieldConverter<Object>> ourConverterByType;
 
     static {
-        List<Converter<?>> converters = new ArrayList<Converter<?>>();
+        List<BasicFieldConverter<?>> converters = new ArrayList<BasicFieldConverter<?>>();
 
         converters.add(new BooleanArrayConverter());
         converters.add(new BooleanConverter());
@@ -97,38 +100,38 @@ public class PrimititveConverter {
         ourConverters = Collections.unmodifiableList(converters);
         ourNonPrimitiveTypes = Collections
                 .newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-        ourConverterByType = new ConcurrentHashMap<String, Converter<Object>>();
+        ourConverterByType = new ConcurrentHashMap<String, BasicFieldConverter<Object>>();
     }
 
     /**
-     * Creates a new PrimititveConverter.
+     * Creates a new PrimitiveFieldConverter.
      */
-    public PrimititveConverter() {
+    public PrimitiveFieldConverter() {
         super();
     }
 
     /**
-     * Converts a name/value pair to an element.
+     * Locates the appropriate converter based on the specified type.
      * 
      * @param type
-     * @param name
-     * @param value
-     * @return
+     *            The type to find a converter for.
+     * @return The converter for the type if found, or <code>null</code> if not
+     *         found.
      */
     @SuppressWarnings("unchecked")
-    public Element toElement(Class<?> type, String name, Object value) {
-
+    private BasicFieldConverter<Object> findConverter(Class<?> type) {
         String typeName = type.getCanonicalName();
         if (ourNonPrimitiveTypes.contains(typeName)) {
             return null;
         }
 
-        Converter<Object> converter = ourConverterByType.get(typeName);
+        BasicFieldConverter<Object> converter = ourConverterByType
+                .get(typeName);
         if (converter == null) {
             // Have to search.
-            for (Converter<?> c : ourConverters) {
+            for (BasicFieldConverter<?> c : ourConverters) {
                 if (c.canConvert(type)) {
-                    converter = (Converter<Object>) c;
+                    converter = (BasicFieldConverter<Object>) c;
                     ourConverterByType.put(typeName, converter);
                     break;
                 }
@@ -140,7 +143,59 @@ public class PrimititveConverter {
                 return null;
             }
         }
+        return converter;
+    }
 
-        return converter.toElement(type, name, value);
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return true if the {@link MappedField#getDeclaredClass()}
+     * is convertable by a primative converter, false otherwise.
+     * </p>
+     */
+    @Override
+    public boolean canConvert(MappedClass clazz, MappedField field) {
+        Class<?> mappedType = field.getDeclaredClass();
+
+        return (findConverter(mappedType) != null);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the field based on the appropriate primative
+     * converter.
+     * </p>
+     */
+    @Override
+    public Element toElement(MappedClass clazz, MappedField field, String name,
+            Object object) {
+        Class<?> mappedType = field.getDeclaredClass();
+        BasicFieldConverter<Object> converter = findConverter(mappedType);
+        if (converter != null) {
+            return converter.toElement(mappedType, name, object);
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the field based on the appropriate primative
+     * converter.
+     * </p>
+     */
+    @Override
+    public Object fromElement(MappedClass clazz, MappedField field,
+            Element element) {
+        Class<?> mappedType = field.getDeclaredClass();
+
+        BasicFieldConverter<Object> converter = findConverter(mappedType);
+        if (converter != null) {
+            return converter.fromElement(mappedType, element);
+        }
+
+        return null;
     }
 }

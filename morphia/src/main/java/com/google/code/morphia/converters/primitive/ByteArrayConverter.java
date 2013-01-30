@@ -22,11 +22,11 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from byte[] values.
+ * FieldConverter to and from byte[] values.
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class ByteArrayConverter extends AbstractConverter<byte[]> {
+public class ByteArrayConverter extends AbstractBasicFieldConverter<byte[]> {
 
     /**
      * Creates a new IntegerConverter.

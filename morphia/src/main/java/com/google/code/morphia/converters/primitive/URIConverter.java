@@ -26,14 +26,14 @@ import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from a URI.
+ * FieldConverter to and from a URI.
  * 
  * @author Scott Hernandez
  * @copyright 2010-2013, Scott Hernandez and Allanbank Consulting, Inc., All
  *            Rights Reserved
  */
 @SuppressWarnings({ "rawtypes" })
-public class URIConverter extends AbstractConverter<URI> {
+public class URIConverter extends AbstractBasicFieldConverter<URI> {
 
     /**
      * Creates a new URIConverter.

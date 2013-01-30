@@ -24,14 +24,14 @@ import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from {@link String} values.
+ * FieldConverter to and from {@link String} values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class StringConverter extends AbstractConverter<String> {
+public class StringConverter extends AbstractBasicFieldConverter<String> {
     /**
      * Creates a new StringConverter.
      */

@@ -31,7 +31,7 @@ import com.google.code.morphia.mapping.MappingException;
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class EnumConverter implements Converter<Enum<?>> {
+public class EnumConverter implements BasicFieldConverter<Enum<?>> {
 
     /**
      * Creates a new EnumConverter.

@@ -14,51 +14,60 @@
  * limitations under the License.
  */
 
-package com.google.code.morphia.converters.primitive;
+package com.google.code.morphia.converters;
 
 import com.allanbank.mongodb.bson.Element;
+import com.google.code.morphia.state.MappedField;
+import com.google.code.morphia.state.MappedClass;
 
 /**
- * Converter provides a common interface for all converters.
+ * FieldConverter provides an interface for the converters of fields to implement.
  * 
  * @param <T>
  *            The type mapped by this converter.
  * 
  * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public interface Converter<T> {
+public interface FieldConverter<T> {
 
     /**
      * Returns true if this converter can be used to convert an object of the
      * {@code mappingType};
      * 
-     * @param mappingType
-     *            The class of object being converted.
+     * @param clazz
+     *            The information on the outer class that is being converted.
+     * @param field
+     *            Details on the field that is being converted.
      * @return True if this converter
      */
-    public boolean canConvert(Class<?> mappingType);
+    public boolean canConvert(MappedClass clazz, MappedField field);
 
     /**
      * Converts the object to an element of the specified type.
      * 
-     * @param mappingType
-     *            The class of object being converted.
+     * @param clazz
+     *            The information on the outer class that is being converted.
+     * @param field
+     *            Details on the field that is being converted.
      * @param name
      *            The name of the object to create into an element.
-     * @param object
+     * @param value
      *            The object to convert.
      * @return The element wrapping the name and value.
      */
-    public Element toElement(Class<?> mappingType, String name, T object);
+    public Element toElement(MappedClass clazz, MappedField field, String name,
+            T value);
 
     /**
      * Converts an element into the specified object type.
      * 
-     * @param mappingType
-     *            The class of object being created.
+     * @param clazz
+     *            The information on the outer class that is being converted.
+     * @param field
+     *            Details on the field that is being converted.
      * @param element
      *            The element containing the mapped type.
      * @return The converted object.
      */
-    public T fromElement(Class<?> mappingType, Element element);
+    public T fromElement(MappedClass clazz, MappedField field, Element element);
 }

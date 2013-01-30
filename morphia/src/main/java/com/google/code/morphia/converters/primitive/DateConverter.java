@@ -37,7 +37,7 @@ import com.google.code.morphia.mapping.MappingException;
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class DateConverter extends AbstractConverter<Date> {
+public class DateConverter extends AbstractBasicFieldConverter<Date> {
 
     /** The default timezone when forced to parse a time. */
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");

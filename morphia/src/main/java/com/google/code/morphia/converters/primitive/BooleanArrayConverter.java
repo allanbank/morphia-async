@@ -25,11 +25,11 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from boolean[] values.
+ * FieldConverter to and from boolean[] values.
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class BooleanArrayConverter extends AbstractConverter<boolean[]> {
+public class BooleanArrayConverter extends AbstractBasicFieldConverter<boolean[]> {
 
     /**
      * Creates a new BooleanConverter.

@@ -23,7 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.code.morphia.converters.primitive.Converter;
+import com.google.code.morphia.converters.FieldConverter;
 
 /**
  * Declares converters required for this entity/class; converters are registered
@@ -40,5 +40,5 @@ import com.google.code.morphia.converters.primitive.Converter;
 public @interface Converters {
     
     /** The converters to be used. */
-    Class<? extends Converter<?>>[] value();
+    Class<? extends FieldConverter<?>>[] value();
 }

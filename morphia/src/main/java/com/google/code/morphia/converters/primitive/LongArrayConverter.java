@@ -25,11 +25,11 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from long[] values.
+ * FieldConverter to and from long[] values.
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class LongArrayConverter extends AbstractConverter<long[]> {
+public class LongArrayConverter extends AbstractBasicFieldConverter<long[]> {
 
     /**
      * Creates a new LongConverter.

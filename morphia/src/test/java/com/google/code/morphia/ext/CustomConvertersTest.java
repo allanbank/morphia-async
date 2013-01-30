@@ -88,7 +88,7 @@ public class CustomConvertersTest extends TestBase {
 	/**
 	 * This test shows an issue with an <code>@Embedded</code> class A
 	 * inheriting from an <code>@Embedded</code> class B that both have a
-	 * Converter assigned (A has AConverter, B has BConverter).
+	 * FieldConverter assigned (A has AConverter, B has BConverter).
 	 * <p>
 	 * When an object (here MyEntity) has a property/field of type A and is
 	 * deserialized, the deserialization fails with a

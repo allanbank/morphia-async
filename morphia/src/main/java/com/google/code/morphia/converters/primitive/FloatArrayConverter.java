@@ -25,11 +25,11 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from float[] values.
+ * FieldConverter to and from float[] values.
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class FloatArrayConverter extends AbstractConverter<float[]> {
+public class FloatArrayConverter extends AbstractBasicFieldConverter<float[]> {
 
     /**
      * Creates a new FloatConverter.

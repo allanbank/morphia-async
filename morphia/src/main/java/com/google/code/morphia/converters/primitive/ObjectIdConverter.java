@@ -30,7 +30,7 @@ import com.google.code.morphia.mapping.MappingException;
  * @copyright 2010-2013, Scott Hernandez and Allanbank Consulting, Inc., All
  *            Rights Reserved
  */
-public class ObjectIdConverter extends AbstractConverter<ObjectId> {
+public class ObjectIdConverter extends AbstractBasicFieldConverter<ObjectId> {
 
     /**
      * Creates a new ObjectIdConverter.

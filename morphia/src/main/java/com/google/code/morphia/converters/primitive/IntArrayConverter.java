@@ -25,11 +25,11 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from int[] values.
+ * FieldConverter to and from int[] values.
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class IntArrayConverter extends AbstractConverter<int[]> {
+public class IntArrayConverter extends AbstractBasicFieldConverter<int[]> {
 
     /**
      * Creates a new IntegerConverter.

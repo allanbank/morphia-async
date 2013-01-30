@@ -60,7 +60,10 @@ public @interface Entity {
     /** Controls if non-primary queries are OK. */
     boolean queryNonPrimary() default false;
 
-    /** Controls the default write concern or {@link Durability} to use. */
+    /**
+     * Controls the default write concern or {@link Durability} to use. See
+     * {@link Durability#valueOf(String)} for acceptable values.
+     */
     String concern() default "";
 
 }

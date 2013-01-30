@@ -29,13 +29,13 @@ import com.allanbank.mongodb.bson.element.TimestampElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from a {@link Timestamp}.
+ * FieldConverter to and from a {@link Timestamp}.
  * 
  * @author Scott Hernandez
  * @copyright 2010-2013, Scott Hernandez and Allanbank Consulting, Inc., All
  *            Rights Reserved
  */
-public class TimestampConverter extends AbstractConverter<Timestamp> {
+public class TimestampConverter extends AbstractBasicFieldConverter<Timestamp> {
 
     /**
      * Creates a new TimestampConverter.

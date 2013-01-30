@@ -25,14 +25,14 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from long values.
+ * FieldConverter to and from long values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class LongConverter extends AbstractConverter<Long> {
+public class LongConverter extends AbstractBasicFieldConverter<Long> {
     /**
      * Creates a new LongConverter.
      */

@@ -21,25 +21,27 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Provides the basic functionality for a converter. Mainly type checking.
+ * Provides the basic functionality for a {@link BasicFieldConverter}. Mainly
+ * type checking.
  * 
  * @param <T>
  *            The type of object supported by this converter.
  * 
  * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public abstract class AbstractConverter<T> implements Converter<T> {
+public abstract class AbstractBasicFieldConverter<T> implements
+        BasicFieldConverter<T> {
 
     /** The complete set of classes this converter supports. */
     private final List<Class<?>> supportedTypes;
 
     /**
-     * Creates a new AbstractConverter.
+     * Creates a new AbstractBasicFieldConverter.
      * 
      * @param supportedTypes
      *            The complete set of classes this converter supports.
      */
-    public AbstractConverter(Class<?>... supportedTypes) {
+    public AbstractBasicFieldConverter(Class<?>... supportedTypes) {
         super();
 
         this.supportedTypes = Collections

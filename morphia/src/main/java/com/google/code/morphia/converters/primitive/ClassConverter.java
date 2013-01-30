@@ -23,14 +23,14 @@ import com.allanbank.mongodb.bson.element.StringElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter for and from {@link Class} values.
+ * FieldConverter for and from {@link Class} values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class ClassConverter extends AbstractConverter<Class<?>> {
+public class ClassConverter extends AbstractBasicFieldConverter<Class<?>> {
 
     /**
      * Creates a new ClassConverter.

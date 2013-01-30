@@ -1,5 +1,5 @@
 /*
- *         Copyright 2013 Allanbank Consulting, Inc.
+ *         Copyright 2010-2013 Allanbank Consulting, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.code.morphia.state;
 
 /**
- * Contains the converters for the primative types and those that can 
- * be easily coerced into a primitive type.
+ * Scanner provides the logic for constructing a {@link MappedClass} (and
+ * associated {@link MappedField} and {@link MappedMethod} objects from a
+ * {@link Class} via reflection.
  * 
  * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-package com.google.code.morphia.converters.primitive;
+public class Scanner {
+
+    /**
+     * Creates a new Scanner.
+     */
+    public Scanner() {
+        super();
+    }
+
+    public MappedClass scan(Class<?> clazz) {
+
+    }
+}

@@ -24,14 +24,14 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter for and from Byte values.
+ * FieldConverter for and from Byte values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting, Inc.,
  *            All Rights Reserved
  */
-public class ByteConverter extends AbstractConverter<Byte> {
+public class ByteConverter extends AbstractBasicFieldConverter<Byte> {
     /**
      * Creates a new ByteConverter.
      */

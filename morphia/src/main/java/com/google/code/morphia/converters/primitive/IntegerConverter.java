@@ -25,14 +25,14 @@ import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
 
 /**
- * Converter to and from integer values.
+ * FieldConverter to and from integer values.
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
  * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
  *            Inc., All Rights Reserved
  */
-public class IntegerConverter extends AbstractConverter<Integer> {
+public class IntegerConverter extends AbstractBasicFieldConverter<Integer> {
     /**
      * Creates a new IntegerConverter.
      */
