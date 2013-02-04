@@ -29,6 +29,7 @@ import com.google.code.morphia.annotations.NotSaved;
 import com.google.code.morphia.annotations.Property;
 import com.google.code.morphia.annotations.Reference;
 import com.google.code.morphia.annotations.Transient;
+import com.google.code.morphia.mapping.MappingException;
 
 /**
  * MappedField provides the details on the how a field should be mapped.
@@ -57,16 +58,19 @@ public class MappedField {
     private final List<String> constructorArgs;
 
     /** The declared type for the field from the class definition. */
-    private Class<?> declaredClass;
+    private final Class<?> declaredClass;
 
     /** The field being mapped. */
-    private Field field;
+    private final Field field;
 
     /** If true then this is the id field. */
     private boolean id;
 
     /** If true missing document references are silently ignored. */
     private boolean ignoreMissing;
+
+    /** The index for the field. */
+    private IndexState index;
 
     /** If true a proxy object should be created for use-time loading. */
     private boolean lazy;
@@ -84,11 +88,69 @@ public class MappedField {
     private Strategy strategy = Strategy.MAP;
 
     /**
-     * Creates a new MappedField.
+     * If true then the field is the version of the document and should be
+     * incremented before each save and the previous version used as part of the
+     * query on an update.
      */
-    public MappedField() {
-        alsoLoadNames = new HashSet<String>();
-        constructorArgs = new ArrayList<String>();
+    private boolean version;
+
+    /**
+     * If true then the field is written, may be false by the {@link Transient}
+     * or {@link NotSaved} anonotation or marking the field as {@code transient}
+     * .
+     */
+    private boolean written;
+
+    /**
+     * Creates a new MappedField.
+     * 
+     * @param field
+     *            The reflected field being mapped.
+     */
+    public MappedField(final Field field) {
+        this.alsoLoadNames = new HashSet<String>();
+        this.concreteClass = field.getType();
+        this.constructorArgs = new ArrayList<String>();
+        this.declaredClass = field.getType();
+        this.field = field;
+        this.id = false;
+        this.ignoreMissing = false;
+        this.index = null;
+        this.lazy = false;
+        this.mappedFieldName = field.getName();
+        this.strategy = Strategy.MAP;
+        this.version = false;
+        this.written = false;
+
+        // So we can write the value.
+        this.field.setAccessible(true);
+    }
+
+    /**
+     * Gets the value of the field from the {@code object}.
+     * 
+     * @param object
+     *            The object to get the value of the field from.
+     * @return The value of the field from the {@code object}.
+     * @throws MappingException
+     *             On a faiilure reading the field from the {@code object}.
+     */
+    public Object get(final Object object) throws MappingException {
+        try {
+            return field.get(object);
+        }
+        catch (final IllegalArgumentException e) {
+            throw new MappingException("Failure reading the '"
+                    + field.getName() + "' field from a '"
+                    + object.getClass().getSimpleName() + "': "
+                    + e.getMessage(), e);
+        }
+        catch (final IllegalAccessException e) {
+            throw new MappingException("Failure reading the '"
+                    + field.getName() + "' field from a '"
+                    + object.getClass().getSimpleName() + "': "
+                    + e.getMessage(), e);
+        }
     }
 
     /**
@@ -137,6 +199,15 @@ public class MappedField {
     }
 
     /**
+     * Returns the index value.
+     * 
+     * @return The index value.
+     */
+    public IndexState getIndex() {
+        return index;
+    }
+
+    /**
      * Returns the mappedFieldName value.
      * 
      * @return The mappedFieldName value.
@@ -182,6 +253,54 @@ public class MappedField {
     }
 
     /**
+     * Returns the version value.
+     * 
+     * @return The version value.
+     */
+    public boolean isVersion() {
+        return version;
+    }
+
+    /**
+     * Returns the written value.
+     * 
+     * @return The written value.
+     */
+    public boolean isWritten() {
+        return written;
+    }
+
+    /**
+     * Sets the value of the field into the {@code object}.
+     * 
+     * @param object
+     *            The object to get the value of the field from.
+     * @param value
+     *            the value to set in the field.
+     * @throws MappingException
+     *             On a faiilure writing the {@code value} into the field of the
+     *             {@code object}.
+     */
+    public void set(final Object object, final Object value)
+            throws MappingException {
+        try {
+            field.set(object, value);
+        }
+        catch (final IllegalArgumentException e) {
+            throw new MappingException("Failure writing the '"
+                    + field.getName() + "' field to a '"
+                    + object.getClass().getSimpleName() + "': "
+                    + e.getMessage(), e);
+        }
+        catch (final IllegalAccessException e) {
+            throw new MappingException("Failure writing the '"
+                    + field.getName() + "' field to a '"
+                    + object.getClass().getSimpleName() + "': "
+                    + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Sets the value of alsoLoadNames to the new value.
      * 
      * @param alsoLoadNames
@@ -218,26 +337,6 @@ public class MappedField {
     }
 
     /**
-     * Sets the value of declaredClass to the new value.
-     * 
-     * @param declaredClass
-     *            The new value for the declaredClass.
-     */
-    public void setDeclaredClass(final Class<?> declaredClass) {
-        this.declaredClass = declaredClass;
-    }
-
-    /**
-     * Sets the value of field to the new value.
-     * 
-     * @param field
-     *            The new value for the field.
-     */
-    public void setField(final Field field) {
-        this.field = field;
-    }
-
-    /**
      * Sets the value of id to the new value.
      * 
      * @param id
@@ -255,6 +354,16 @@ public class MappedField {
      */
     public void setIgnoreMissing(final boolean ignoreMissing) {
         this.ignoreMissing = ignoreMissing;
+    }
+
+    /**
+     * Sets the value of index to the new value.
+     * 
+     * @param index
+     *            The new value for the index.
+     */
+    public void setIndex(final IndexState index) {
+        this.index = index;
     }
 
     /**
@@ -288,6 +397,26 @@ public class MappedField {
     }
 
     /**
+     * Sets the value of version to the new value.
+     * 
+     * @param version
+     *            The new value for the version.
+     */
+    public void setVersion(final boolean version) {
+        this.version = version;
+    }
+
+    /**
+     * Sets the value of written to the new value.
+     * 
+     * @param written
+     *            The new value for the written.
+     */
+    public void setWritten(final boolean written) {
+        this.written = written;
+    }
+
+    /**
      * Strategy provides the highlevel method used to save the field.
      * 
      * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
@@ -296,8 +425,14 @@ public class MappedField {
         /** Map the field into an appropriate BSON element. */
         MAP,
 
-        /** Don't save the field. May be done by the entity listeners. */
+        /** Don't save or read the field. May be done by the entity listeners. */
         NONE,
+
+        /**
+         * Don't save the field in the enclosing object document. Use a document
+         * reference.
+         */
+        REFERENCE,
 
         /** Serialize the field into a BSON binary element without compression. */
         SERIALIZE_UNCOMPRESSED,

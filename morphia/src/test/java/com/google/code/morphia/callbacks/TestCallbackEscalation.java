@@ -7,10 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Assert;
-
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.TestBase;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Entity;

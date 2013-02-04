@@ -1,7 +1,6 @@
 package com.google.code.morphia.callbacks;
 
-import org.bson.types.ObjectId;
-
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.PostPersist;
 

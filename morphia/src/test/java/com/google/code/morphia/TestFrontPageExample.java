@@ -21,10 +21,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
-
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Indexed;
