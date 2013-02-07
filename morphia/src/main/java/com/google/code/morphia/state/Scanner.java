@@ -502,7 +502,7 @@ public class Scanner {
         final Serialized serialized = field.getAnnotation(Serialized.class);
         if (serialized != null) {
             if (serialized.disableCompression()) {
-                mapped.setStrategy(Strategy.SERIALIZE_UNCOMPRESSED);
+                mapped.setStrategy(Strategy.SERIALIZED_UNCOMPRESSED);
             }
             else {
                 mapped.setStrategy(Strategy.SERIALIZED_COMPRESSED);
@@ -627,6 +627,9 @@ public class Scanner {
      */
     static class AbstractEntityInterceptorCallback extends
             AbstractEntityInterceptor {
+        /** The class for the {@link DocumentBuilder} interface. */
+        public static final Class<DocumentBuilder> DOCUMENT_BUILDER_CLASS = DocumentBuilder.class;
+
         /** An empty argument array. */
         public static final Object[] EMPTY_ARGS = new Object[0];
 
@@ -666,7 +669,7 @@ public class Scanner {
             boolean passEnt = false;
             final Class<?>[] parameterType = this.callback.getParameterTypes();
             if (parameterType.length == 1) {
-                if (DocumentBuilder.class.isAssignableFrom(parameterType[0])) {
+                if (DOCUMENT_BUILDER_CLASS.isAssignableFrom(parameterType[0])) {
                     passDoc = true;
                 }
                 else {

@@ -100,6 +100,9 @@ public class MappedClass {
     /** The mapped fields from the class other than the id and version fields. */
     private final List<MappedField> fields;
 
+    /** The mapped fields indexed by name. */
+    private final Map<String, MappedField> fieldsByNames;
+
     /** The id field for the class. */
     private MappedField idField;
 
@@ -143,6 +146,7 @@ public class MappedClass {
         this.derivedMapping = new HashMap<String, Class<?>>();
         this.durability = Durability.ACK;
         this.fields = new ArrayList<MappedField>();
+        this.fieldsByNames = new HashMap<String, MappedField>();
         this.idField = null;
         this.indexes = new ArrayList<IndexState>();
         this.methods = new ArrayList<EntityInterceptor>();
@@ -232,6 +236,17 @@ public class MappedClass {
      */
     public Collection<MappedField> getFields() {
         return Collections.unmodifiableList(fields);
+    }
+
+    /**
+     * Finds the {@link MappedField} by the name of the field.
+     * 
+     * @param name
+     *            The name of the field.
+     * @return The mapped field for the name, if any.
+     */
+    public MappedField findField(String name) {
+        return fieldsByNames.get(name);
     }
 
     /**
@@ -386,8 +401,22 @@ public class MappedClass {
      */
     public void setFields(final Collection<MappedField> fields) {
         this.fields.clear();
+        this.fieldsByNames.clear();
         if (fields != null) {
             this.fields.addAll(fields);
+
+            // Two scans.
+            for (MappedField field : fields) {
+                // First also names.
+                for (String name : field.getAlsoLoadNames()) {
+                    fieldsByNames.put(name, field);
+                }
+            }
+
+            for (MappedField field : fields) {
+                // Now the canonical name.
+                fieldsByNames.put(field.getMappedFieldName(), field);
+            }
         }
     }
 

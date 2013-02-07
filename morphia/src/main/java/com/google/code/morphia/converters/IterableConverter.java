@@ -1,154 +1,212 @@
-/**
+/*
+ *         Copyright 2010-2013 Uwe Schaefer, Scott Hernandez 
+ *               and Allanbank Consulting, Inc.
  * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.google.code.morphia.converters;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.ElementType;
-import com.allanbank.mongodb.bson.builder.ArrayBuilder;
-import com.allanbank.mongodb.bson.builder.BuilderFactory;
-import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.allanbank.mongodb.bson.element.ArrayElement;
-import com.google.code.morphia.ObjectFactory;
-import com.google.code.morphia.mapping.MappedField;
+import com.allanbank.mongodb.bson.element.NullElement;
 import com.google.code.morphia.mapping.MappingException;
-import com.google.code.morphia.utils.ReflectionUtils;
+import com.google.code.morphia.state.MappedClass;
+import com.google.code.morphia.state.MappedField;
 
 /**
+ * Converts any {@link Iterable} into an {@link ArrayElement}.
+ * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
- * @author scotthernandez
+ * @author Scott Hernandez
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
-
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class IterableConverter extends TypeConverter<Object> {
+public class IterableConverter implements FieldConverter<Object> {
+
+    /**
+     * Tne class for the {@link ArrayList} which is used as the default non-set
+     * implementation.
+     */
+    public static final Class<ArrayList> ARRAY_LIST_CLASS = ArrayList.class;
+
+    /**
+     * The class for the {@link HashSet} which is used as the default Set
+     * implementation.
+     */
+    public static final Class<HashSet> HASH_SET_CLASS = HashSet.class;
+
+    /** The class for the {@link Set} interface. */
+    public static final Class<Set> SET_CLASS = Set.class;
+
+    /** The class for the {@link Iterable} interface. */
+    public static final Class<Iterable> ITERABLE_CLASS = Iterable.class;
+
+    /** The base object class. */
+    public static final Class<Object> OBJECT_CLASS = Object.class;
+
     /** The converters for sub-fields. */
-    private final DefaultConverters chain;
+    private final CachingFieldConverter fieldConverter;
 
     /**
      * Creates a new IterableConverter.
      * 
-     * @param chain
+     * @param fieldConverter
      *            The converters for sub-fields.
      */
-    public IterableConverter(DefaultConverters chain) {
-        this.chain = chain;
-    }
-
-    @Override
-    protected boolean isSupported(Class c, MappedField mf) {
-        if (mf != null) {
-            return mf.isMultipleValues() && !mf.isMap(); // &&
-                                                         // !mf.isTypeMongoCompatible();
-        }
-        return c.isArray()
-                || ReflectionUtils.implementsInterface(c, Iterable.class);
-    }
-
-    @Override
-    public Object decode(Class targetClass, Element element, MappedField mf)
-            throws MappingException {
-        if ((element == null) || (element.getType() == ElementType.NULL)) {
-            return null;
-        }
-
-        Class subtypeDest = mf.getSubClass();
-        Collection vals = createNewCollection(mf);
-        if (element.getType() == ElementType.ARRAY) {
-            for (Element o : ((ArrayElement) element).getEntries()) {
-                vals.add(chain.decode(
-                        (subtypeDest != null) ? subtypeDest : o.getClass(), o));
-            }
-        }
-        else {
-            // Single value case
-            vals.add(chain.decode(
-                    (subtypeDest != null) ? subtypeDest : element.getClass(),
-                    element));
-        }
-
-        // convert to and array if that is the destination type (not a
-        // list/set)
-        if (mf.getType().isArray()) {
-            return ReflectionUtils.convertToArray(subtypeDest, (List) vals);
-        }
-        return vals;
+    public IterableConverter(CachingFieldConverter fieldConverter) {
+        this.fieldConverter = fieldConverter;
     }
 
     /**
      * Create the appropriate type of collections to be used.
      * 
-     * @param mf
+     * @param field
      *            The field information.
      * @return The created collection.
      */
-    private Collection<?> createNewCollection(final MappedField mf) {
-        ObjectFactory of = mapr.getOptions().objectFactory;
-        return mf.isSet() ? of.createSet(mf) : of.createList(mf);
+    private Collection<?> createNewCollection(final MappedField field) {
+        Class<?> type = field.getResolvedClass();
+
+        if (SET_CLASS.isAssignableFrom(type)) {
+            return newInstance(type, HASH_SET_CLASS);
+        }
+        return newInstance(type, ARRAY_LIST_CLASS);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return true if the field's type implements the
+     * {@link Iterable} interface.
+     * </p>
+     */
     @Override
-    public void encode(DocumentBuilder builder, String name, Object value,
-            MappedField mf) {
+    public boolean canConvert(MappedClass clazz,
+            com.google.code.morphia.state.MappedField field) {
+        Class<?> type = field.getResolvedClass();
 
+        return ITERABLE_CLASS.isAssignableFrom(type);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to create an {@link ArrayElement} with the iterable values.
+     * </p>
+     */
+    @Override
+    public Element toElement(MappedClass clazz,
+            com.google.code.morphia.state.MappedField field, String name,
+            Object value) {
         if (value == null) {
-            builder.addNull(name);
+            return new NullElement(name);
         }
-        else if (value instanceof byte[]) {
-            builder.add(name, (byte[]) value);
+
+        Iterable<?> iterableValues = toIterable(value);
+        List<Element> elements = new ArrayList<Element>();
+        int i = 0;
+        MappedField subField = new MappedField();
+        for (Object o : iterableValues) {
+
+            String itemName = String.valueOf(i++);
+            subField.mapFor(itemName,
+                    (o != null) ? o.getClass() : field.getTypeArgumentClass(0));
+
+            elements.add(fieldConverter.toElement(clazz, subField, itemName, o));
+        }
+
+        return new ArrayElement(name, elements);
+    }
+
+    /**
+     * Converts the value into an iterable.
+     * 
+     * @param value
+     *            The value to convert.
+     * @return The value as an {@link Iterable}.
+     */
+    protected Iterable<?> toIterable(Object value) {
+        return (Iterable<?>) value;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert an {@link ArrayElement} to an {@link Iterable}
+     * again.
+     * </p>
+     */
+    @Override
+    public Object fromElement(MappedClass clazz, MappedField field,
+            Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
+            return null;
+        }
+
+        Class subtype = field.getTypeArgumentClass(0);
+        MappedField subField = new MappedField();
+        subField.mapFor("0", subtype);
+
+        Collection vals = createNewCollection(field);
+        if (element.getType() == ElementType.ARRAY) {
+            for (Element o : ((ArrayElement) element).getEntries()) {
+                vals.add(fieldConverter.fromElement(clazz, subField, o));
+            }
         }
         else {
-            Iterable<?> iterableValues = null;
-            if (value.getClass().isArray()) {
-                if (value.getClass().getComponentType().isPrimitive()) {
-                    final int length = Array.getLength(value);
-                    Object[] upCast = new Object[Array.getLength(value)];
-                    for (int i = 0; i < length; ++i) {
-                        upCast[i] = Array.get(value, i);
-                    }
-                    iterableValues = Arrays.asList(upCast);
-                }
-                else {
-                    iterableValues = Arrays.asList((Object[]) value);
-                }
-            }
-            else {
-                if (!(value instanceof Iterable))
-                    throw new ConverterException("Cannot cast "
-                            + value.getClass()
-                            + " to Iterable for MappedField: " + mf);
+            // Single value case
+            vals.add(fieldConverter.fromElement(clazz, subField, element));
+        }
 
-                // cast value to a common interface
-                iterableValues = (Iterable<?>) value;
-            }
+        return vals;
+    }
 
-            // Create a temp doc.
-            DocumentBuilder doc = BuilderFactory.start();
-            if (mf != null && mf.getSubClass() != null) {
-                int i = 0;
-                for (Object o : iterableValues) {
-                    chain.encode(doc, mf.getSubClass(), o, String.valueOf(i++),
-                            null);
-                }
+    /**
+     * Creates an object of the specified type or if that fails the fallback
+     * type.
+     * 
+     * @param type
+     *            The type to create a new instance of.
+     * @param fallbackType
+     *            The fallback type to create.
+     * @return The object created.
+     */
+    private Collection<?> newInstance(Class<?> type,
+            final Class<? extends Collection> fallbackType) {
+        try {
+            return (Collection<?>) type.newInstance();
+        }
+        catch (Exception error) {
+            try {
+                return fallbackType.newInstance();
             }
-            else {
-                int i = 0;
-                for (Object o : iterableValues) {
-                    chain.encode(doc, o, String.valueOf(i++), null);
-                }
+            catch (InstantiationException e) {
+                throw new MappingException(
+                        "Could not create a object of type '"
+                                + fallbackType.getSimpleName() + "'.", e);
             }
-
-            List<Element> elements = doc.build().getElements();
-            if (!elements.isEmpty() || mapr.getOptions().storeEmpties) {
-                // Now convert to an array.
-                ArrayBuilder ab = builder.pushArray(name);
-                for (Element e : elements) {
-                    ab.add(e);
-                }
+            catch (IllegalAccessException e) {
+                throw new MappingException(
+                        "Could not create a object of type '"
+                                + fallbackType.getSimpleName() + "'.", e);
             }
         }
     }

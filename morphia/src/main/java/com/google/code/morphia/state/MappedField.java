@@ -16,6 +16,8 @@
 package com.google.code.morphia.state;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +32,7 @@ import com.google.code.morphia.annotations.Property;
 import com.google.code.morphia.annotations.Reference;
 import com.google.code.morphia.annotations.Transient;
 import com.google.code.morphia.mapping.MappingException;
+import com.google.code.morphia.utils.ReflectionUtils;
 
 /**
  * MappedField provides the details on the how a field should be mapped.
@@ -81,6 +84,9 @@ public class MappedField {
      */
     private String mappedFieldName;
 
+    /** The parameter classes for the field. */
+    private Class<?>[] parameterClasses = null;
+
     /**
      * The strategy for saving the field. Can be set to {@link Strategy#NONE} by
      * the {@link Transient} or {@link NotSaved} annotation.
@@ -100,6 +106,25 @@ public class MappedField {
      * .
      */
     private boolean written;
+
+    /**
+     * Creates a new MappedField. Used with entries of Collections.
+     */
+    public MappedField() {
+        this.alsoLoadNames = new HashSet<String>();
+        this.concreteClass = null;
+        this.constructorArgs = new ArrayList<String>();
+        this.declaredClass = null;
+        this.field = null;
+        this.id = false;
+        this.ignoreMissing = false;
+        this.index = null;
+        this.lazy = false;
+        this.mappedFieldName = null;
+        this.strategy = Strategy.MAP;
+        this.version = false;
+        this.written = false;
+    }
 
     /**
      * Creates a new MappedField.
@@ -217,12 +242,55 @@ public class MappedField {
     }
 
     /**
+     * Returns the resolved class for the field. This it the concrete class if
+     * set or the declared class if not.
+     * 
+     * @return The resolved class for the field.
+     */
+    public Class<?> getResolvedClass() {
+        if (concreteClass != null) {
+            return concreteClass;
+        }
+        return declaredClass;
+    }
+
+    /**
      * Returns the strategy value.
      * 
      * @return The strategy value.
      */
     public Strategy getStrategy() {
         return strategy;
+    }
+
+    /**
+     * Returns the Class for the i'th type parameter.
+     * 
+     * @param i
+     *            The intex for the parameter. The first parameter is index
+     *            zero.
+     * @return The i'th type parameter index.
+     */
+    public Class<? extends Object> getTypeArgumentClass(final int i) {
+        if (parameterClasses == null) {
+            final Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                final ParameterizedType pt = (ParameterizedType) type;
+
+                final Type[] args = pt.getActualTypeArguments();
+
+                final Class<?>[] clazzes = new Class[args.length];
+                for (int j = 0; j < args.length; ++j) {
+                    final Type arg = args[j];
+                    clazzes[j] = ReflectionUtils.getClass(arg);
+                }
+            }
+            else {
+                // This is not going to end pretty.
+                parameterClasses = new Class[0];
+            }
+        }
+        return parameterClasses[i];
     }
 
     /**
@@ -268,6 +336,21 @@ public class MappedField {
      */
     public boolean isWritten() {
         return written;
+    }
+
+    /**
+     * Resets the {@link MappedField} for the item specified. Used with items in
+     * Collections.
+     * 
+     * @param itemName
+     *            The name for the field.
+     * @param clazz
+     *            The type of the field.
+     */
+    public void mapFor(final String itemName,
+            final Class<? extends Object> clazz) {
+        setMappedFieldName(itemName);
+        setConcreteClass(clazz);
     }
 
     /**
@@ -434,10 +517,10 @@ public class MappedField {
          */
         REFERENCE,
 
-        /** Serialize the field into a BSON binary element without compression. */
-        SERIALIZE_UNCOMPRESSED,
-
         /** Serialize the field into a BSON binary element with compression. */
-        SERIALIZED_COMPRESSED;
+        SERIALIZED_COMPRESSED,
+
+        /** Serialize the field into a BSON binary element without compression. */
+        SERIALIZED_UNCOMPRESSED;
     }
 }

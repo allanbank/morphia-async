@@ -155,7 +155,7 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
      */
     @Override
     public boolean canConvert(MappedClass clazz, MappedField field) {
-        Class<?> mappedType = field.getDeclaredClass();
+        Class<?> mappedType = field.getResolvedClass();
 
         return (findConverter(mappedType) != null);
     }
@@ -170,7 +170,7 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
     @Override
     public Element toElement(MappedClass clazz, MappedField field, String name,
             Object object) {
-        Class<?> mappedType = field.getDeclaredClass();
+        Class<?> mappedType = field.getResolvedClass();
         BasicFieldConverter<Object> converter = findConverter(mappedType);
         if (converter != null) {
             return converter.toElement(mappedType, name, object);
@@ -189,7 +189,7 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
     @Override
     public Object fromElement(MappedClass clazz, MappedField field,
             Element element) {
-        Class<?> mappedType = field.getDeclaredClass();
+        Class<?> mappedType = field.getResolvedClass();
 
         BasicFieldConverter<Object> converter = findConverter(mappedType);
         if (converter != null) {
