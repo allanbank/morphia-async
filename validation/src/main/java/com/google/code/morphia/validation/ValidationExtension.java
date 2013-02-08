@@ -36,7 +36,7 @@ public class ValidationExtension extends AbstractEntityInterceptor {
 
     @Override
     public void prePersist(final Object ent, final DocumentBuilder dbObj,
-            final Mapper mapr) {
+            final Converter converter) {
         final Set validate = this.validationFactory.getValidator()
                 .validate(ent);
         if (!validate.isEmpty()) {

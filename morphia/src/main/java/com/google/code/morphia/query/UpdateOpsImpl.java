@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.code.morphia.mapping.MappedField;
-import com.google.code.morphia.mapping.Mapper;
+import com.google.code.morphia.state.MappedField;
 
 /**
  * 

@@ -25,7 +25,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.allanbank.mongodb.bson.DocumentReference;
-import com.google.code.morphia.mapping.Mapper;
 
 /**
  * Indicates that the field should be stored as a {@link DocumentReference} or
@@ -41,11 +40,14 @@ import com.google.code.morphia.mapping.Mapper;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Reference {
+    /** The ignored field name. */
+    public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
+
     /**
      * The name of the Mongo value to store the field. Defaults to the name of
      * the field being annotated.
      */
-    String value() default Mapper.IGNORED_FIELDNAME;
+    String value() default IGNORED_FIELDNAME;
 
     /** Specify the concrete class to instantiate. */
     Class<?> concreteClass() default Object.class;

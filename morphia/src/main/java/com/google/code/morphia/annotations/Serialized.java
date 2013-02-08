@@ -23,8 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.code.morphia.mapping.Mapper;
-
 /**
  * Marker for fields that should be (java) serialized
  * 
@@ -36,10 +34,13 @@ import com.google.code.morphia.mapping.Mapper;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Serialized {
+    /** The ignored field name. */
+    public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
+
 
     /** If true then the serialized field will not be compressed. */
     boolean disableCompression() default false;
 
     /** The name for the mapped field. Defaults to the field name. */
-    String value() default Mapper.IGNORED_FIELDNAME;
+    String value() default IGNORED_FIELDNAME;
 }

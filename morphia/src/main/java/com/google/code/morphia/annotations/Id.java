@@ -37,5 +37,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Id {
-    // Marker.
+    /** The field name used for the id. */
+    public static final String ID_FIELD = "_id";
 }

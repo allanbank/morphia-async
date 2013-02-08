@@ -24,8 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.code.morphia.mapping.Mapper;
-
 /**
  * Optional annotation for specifying persistence behavior
  * 
@@ -40,8 +38,11 @@ import com.google.code.morphia.mapping.Mapper;
 @Target(ElementType.FIELD)
 public @interface Property {
 
+    /** The ignored field name. */
+    public static final String IGNORED_FIELDNAME = ".";
+
     /** The name of the key to store the field in; Defaults to the field name. */
-    String value() default Mapper.IGNORED_FIELDNAME;
+    String value() default IGNORED_FIELDNAME;
 
     /** Specify the concrete class to instantiate. */
     Class<?> concreteClass() default Object.class;

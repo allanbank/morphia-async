@@ -59,7 +59,7 @@ import com.google.code.morphia.annotations.Reference;
 import com.google.code.morphia.annotations.Serialized;
 import com.google.code.morphia.annotations.Transient;
 import com.google.code.morphia.annotations.Version;
-import com.google.code.morphia.mapping.Mapper;
+import com.google.code.morphia.converters.Converter;
 import com.google.code.morphia.mapping.MappingException;
 import com.google.code.morphia.state.MappedField.Strategy;
 
@@ -769,7 +769,7 @@ public class Scanner {
          */
         @Override
         public void postLoad(final Object ent, final DocumentBuilder dbObj,
-                final Mapper mapr) {
+                final Converter converter) {
             callback(ent, dbObj);
         }
     }
@@ -802,7 +802,7 @@ public class Scanner {
          */
         @Override
         public void postPersist(final Object ent, final DocumentBuilder dbObj,
-                final Mapper mapr) {
+                final Converter converter) {
             callback(ent, dbObj);
         }
     }
@@ -833,7 +833,7 @@ public class Scanner {
          */
         @Override
         public void preLoad(final Object ent, final DocumentBuilder dbObj,
-                final Mapper mapr) {
+                final Converter converter) {
             callback(ent, dbObj);
         }
     }
@@ -866,7 +866,7 @@ public class Scanner {
          */
         @Override
         public void prePersist(final Object ent, final DocumentBuilder dbObj,
-                final Mapper mapr) {
+                final Converter converter) {
             callback(ent, dbObj);
         }
     }
@@ -897,7 +897,7 @@ public class Scanner {
          */
         @Override
         public void preSave(final Object ent, final DocumentBuilder dbObj,
-                final Mapper mapr) {
+                final Converter converter) {
             callback(ent, dbObj);
         }
     }

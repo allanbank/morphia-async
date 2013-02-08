@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 
 import com.allanbank.mongodb.ClosableIterator;
 import com.allanbank.mongodb.bson.Document;
-import com.google.code.morphia.mapping.Mapper;
+import com.google.code.morphia.Morphia;
 import com.google.code.morphia.mapping.cache.EntityCache;
 
 /**
@@ -15,14 +15,14 @@ import com.google.code.morphia.mapping.cache.EntityCache;
 @SuppressWarnings("unchecked")
 public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
     private final ClosableIterator<Document> wrapped;
-    private final Mapper m;
+    private final Morphia m;
     private final Class<T> clazz;
     // private final String kind;
     private final EntityCache cache;
     private long driverTime = 0;
     private long mapperTime = 0;
 
-    public MorphiaIterator(ClosableIterator<Document> it, Mapper m,
+    public MorphiaIterator(ClosableIterator<Document> it, Morphia m,
             Class<T> clazz, String kind, EntityCache cache) {
         this.wrapped = it;
         this.m = m;
@@ -57,7 +57,7 @@ public class MorphiaIterator<T, V> implements Iterable<V>, Iterator<V> {
 
     protected V processItem(Document dbObj) {
         long start = System.currentTimeMillis();
-        V entity = (V) m.fromDBObject(clazz, dbObj, cache);
+        V entity = (V) m.fromDocument(clazz, dbObj, cache);
         mapperTime += System.currentTimeMillis() - start;
         return (V) entity;
     }

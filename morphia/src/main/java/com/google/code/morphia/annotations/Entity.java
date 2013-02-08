@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.allanbank.mongodb.Durability;
-import com.google.code.morphia.mapping.Mapper;
 
 /**
  * Allows marking and naming the collectionName
@@ -39,11 +38,14 @@ import com.google.code.morphia.mapping.Mapper;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 public @interface Entity {
+    /** The ignored field name. */
+    public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
+
     /**
      * The name for the persistend field. Defaults to the name of the field in
      * the class.
      */
-    String value() default Mapper.IGNORED_FIELDNAME;
+    String value() default IGNORED_FIELDNAME;
 
     /** Controls if the collection created for the entities is capped or not. */
     CappedAt cap() default @CappedAt(0);

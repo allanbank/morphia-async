@@ -22,8 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.code.morphia.mapping.Mapper;
-
 /**
  * supposed to be used on a Long or long field for optimistic locking.
  * 
@@ -34,6 +32,9 @@ import com.google.code.morphia.mapping.Mapper;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Version {
+    /** The ignored field name. */
+    public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
+
     /** The mapped name for the field. */
-    String value() default Mapper.IGNORED_FIELDNAME;
+    String value() default IGNORED_FIELDNAME;
 }

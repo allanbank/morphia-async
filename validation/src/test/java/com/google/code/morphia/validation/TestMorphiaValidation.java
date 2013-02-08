@@ -25,7 +25,7 @@ public class TestMorphiaValidation extends TestBase
 
     /**
      * Test method for
-     * {@link com.google.code.morphia.validation.MorphiaValidationExtension#prePersist(java.lang.Object, com.mongodb.DBObject, com.google.code.morphia.mapping.Mapper)}
+     * {@link com.google.code.morphia.validation.MorphiaValidationExtension#prePersist(java.lang.Object, com.mongodb.DBObject, Converter)}
      * .
      */
     @Test

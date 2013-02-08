@@ -125,22 +125,16 @@ public class Morphia {
 
     public <T> T fromDocument(Class<T> entityClass, Document dbObject,
             EntityCache cache) {
-        try {
-            return (T) mapper.fromDocument(entityClass, dbObject, cache);
-        }
-        catch (Exception e) {
-            throw new MappingException("Could not map entity from DBObject", e);
-        }
+        // FIXME - Use the entity cache.
+        Converter converter = new Converter(classCache);
+
+        return converter.fromDocument(entityClass, dbObject);
     }
 
     public Document toDocument(Object entity) {
         Converter converter = new Converter(classCache);
 
         return converter.toDocument(entity);
-    }
-
-    public Mapper getMapper() {
-        return this.mapper;
     }
 
     /** It is best to use a MongoClient singleton instance here **/

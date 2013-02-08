@@ -6,7 +6,6 @@ package com.google.code.morphia.mapping.validation.classrules;
 import java.util.Set;
 
 import com.google.code.morphia.annotations.Embedded;
-import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.mapping.validation.ClassConstraint;
 import com.google.code.morphia.mapping.validation.ConstraintViolation;
 import com.google.code.morphia.mapping.validation.ConstraintViolation.Level;
@@ -23,11 +22,11 @@ public class EmbeddedAndValue implements ClassConstraint {
         Class<?> clazz = mc.getMappedClass();
         Embedded embedded = clazz.getAnnotation(Embedded.class);
         if ((embedded != null)
-                && !embedded.value().equals(Mapper.IGNORED_FIELDNAME)) {
+                && !embedded.value().equals(Embedded.IGNORED_FIELDNAME)) {
             ve.add(new ConstraintViolation(Level.FATAL, mc, this.getClass(),
                     "@" + Embedded.class.getSimpleName()
                             + " classes cannot specify a fieldName value(); "
-                            + "this is only applicable on fields"));
+                            + "this is on applicable on fields"));
         }
     }
 
