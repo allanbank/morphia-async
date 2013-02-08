@@ -90,7 +90,7 @@ public class CachingFieldConverter implements FieldConverter<Object> {
                     (Serializable) value);
         }
 
-        Class<?> type = value.getClass();
+        Class<?> type = field.getResolvedClass();
         FieldConverter converter = resolved.get(type);
         if ((converter != null) && converter.canConvert(clazz, field)) {
             return converter.toElement(clazz, field, name, value);
@@ -112,8 +112,27 @@ public class CachingFieldConverter implements FieldConverter<Object> {
     @Override
     public Object fromElement(MappedClass clazz, MappedField field,
             Element element) {
-        // TODO Auto-generated method stub
-        return null;
+        if (serializeConverter.canConvert(clazz, field)) {
+            return serializeConverter.fromElement(clazz, field, element);
+        }
+
+        Class<?> type = field.getResolvedClass();
+        FieldConverter converter = resolved.get(type);
+        if ((converter != null) && converter.canConvert(clazz, field)) {
+            return converter.fromElement(clazz, field, element);
+        }
+
+        for (FieldConverter c : converters) {
+            if (c.canConvert(clazz, field)) {
+                resolved.put(type, c);
+                return c.fromElement(clazz, field, element);
+            }
+        }
+
+        throw new MappingException("Don't know how to convert the field '"
+                + field.getField().getName() + "' in the type '"
+                + clazz.getMappedClass().getCanonicalName() + "' of type '"
+                + type.getSimpleName() + "'.");
     }
 
 }

@@ -19,8 +19,7 @@ package com.google.code.morphia.testutil;
 
 import java.io.Serializable;
 
-import org.bson.types.ObjectId;
-
+import com.allanbank.mongodb.bson.element.ObjectId;
 import com.google.code.morphia.annotations.Id;
 
 /**

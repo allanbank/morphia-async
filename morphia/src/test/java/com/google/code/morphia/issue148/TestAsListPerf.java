@@ -239,7 +239,7 @@ public class TestAsListPerf extends TestBase {
 		EntityCache entityCache = new DefaultEntityCache();
 		List<Address> resultList = new LinkedList<Address>();
 		for (DBObject dbObject : list) {
-			Address address = morphia.fromDBObject(Address.class, dbObject, entityCache);
+			Address address = morphia.fromDocument(Address.class, dbObject, entityCache);
 			resultList.add(address);
 		}
 		long duration = (System.nanoTime() - start) / 1000000; //ns -> ms

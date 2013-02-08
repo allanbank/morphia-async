@@ -6,10 +6,10 @@ package com.google.code.morphia.mapping.validation.fieldrules;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import com.google.code.morphia.mapping.MappedClass;
-import com.google.code.morphia.mapping.MappedField;
 import com.google.code.morphia.mapping.validation.ConstraintViolation;
 import com.google.code.morphia.mapping.validation.ConstraintViolation.Level;
+import com.google.code.morphia.state.MappedClass;
+import com.google.code.morphia.state.MappedField;
 
 /**
  * @author Uwe Schaefer, (us@thomas-daily.de)

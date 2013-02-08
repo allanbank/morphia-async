@@ -37,7 +37,7 @@ public class LongConverter extends AbstractBasicFieldConverter<Long> {
      * Creates a new LongConverter.
      */
     public LongConverter() {
-        super(int.class, Long.class);
+        super(long.class, Long.class);
     }
 
     /**

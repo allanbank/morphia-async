@@ -15,6 +15,7 @@
  */
 package com.google.code.morphia.state;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -123,7 +124,7 @@ public class MappedField {
         this.mappedFieldName = null;
         this.strategy = Strategy.MAP;
         this.version = false;
-        this.written = false;
+        this.written = true;
     }
 
     /**
@@ -145,7 +146,7 @@ public class MappedField {
         this.mappedFieldName = field.getName();
         this.strategy = Strategy.MAP;
         this.version = false;
-        this.written = false;
+        this.written = true;
 
         // So we can write the value.
         this.field.setAccessible(true);
@@ -284,13 +285,17 @@ public class MappedField {
                     final Type arg = args[j];
                     clazzes[j] = ReflectionUtils.getClass(arg);
                 }
+                parameterClasses = clazzes;
             }
             else {
                 // This is not going to end pretty.
                 parameterClasses = new Class[0];
             }
         }
-        return parameterClasses[i];
+        if (i < parameterClasses.length) {
+            return parameterClasses[i];
+        }
+        return null;
     }
 
     /**
@@ -522,5 +527,16 @@ public class MappedField {
 
         /** Serialize the field into a BSON binary element without compression. */
         SERIALIZED_UNCOMPRESSED;
+    }
+
+    /**
+     * Returns true if the field contains the specified annotation.
+     * 
+     * @param annotationClass
+     *            The class for the annotation.
+     * @return True if the field contains the annotation.
+     */
+    public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+        return (field.getAnnotation(annotationClass) != null);
     }
 }

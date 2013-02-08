@@ -1,18 +1,15 @@
 package com.google.code.morphia;
 
 import java.util.List;
-import java.util.Map;
 
 import com.allanbank.mongodb.Durability;
 import com.allanbank.mongodb.MongoClient;
 import com.allanbank.mongodb.MongoCollection;
 import com.allanbank.mongodb.MongoDatabase;
-import com.allanbank.mongodb.builder.MapReduce;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.code.morphia.utils.IndexDirection;
-import com.google.code.morphia.utils.IndexFieldDef;
 
 /**
  * Datastore interface to get/delete/save objects
@@ -236,41 +233,46 @@ public interface Datastore {
     <T> T findAndModify(Query<T> q, UpdateOperations<T> ops,
             boolean oldVersion, boolean createIfMissing);
 
-    @SuppressWarnings("rawtypes")
-    /**
-     * Runs a map/reduce job at the server; this should be used with a server version 1.7.4 or higher
-     * @param <T> The type of resulting data
-     * @param outputType The type of resulting data; inline is not working yet
-     * @param type MapreduceType
-     * @param q The query (only the criteria, limit and sort will be used)
-     * @param map The map function, in javascript, as a string
-     * @param reduce The reduce function, in javascript, as a string
-     * @param finalize The finalize function, in javascript, as a string; can be null
-     * @param scopeFields Each map entry will be a global variable in all the functions; can be null
-     * @return counts and stuff
-     */
-    <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q, String map,
-            String reduce, String finalize, Map<String, Object> scopeFields,
-            Class<T> outputType);
-
-    /**
-     * Runs a map/reduce job at the server; this should be used with a server
-     * version 1.7.4 or higher
-     * 
-     * @param <T>
-     *            The type of resulting data
-     * @param type
-     *            MapreduceType
-     * @param q
-     *            The query (only the criteria, limit and sort will be used)
-     * @param outputType
-     *            The type of resulting data; inline is not working yet
-     * @param baseCommand
-     *            The base command to fill in and send to the server
-     * @return counts and stuff
-     */
-    <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q,
-            Class<T> outputType, MapReduce baseCommand);
+    // FIXME - Add MapReduce command support back.
+    // @SuppressWarnings("rawtypes")
+    // /**
+    // * Runs a map/reduce job at the server; this should be used with a server
+    // version 1.7.4 or higher
+    // * @param <T> The type of resulting data
+    // * @param outputType The type of resulting data; inline is not working yet
+    // * @param type MapreduceType
+    // * @param q The query (only the criteria, limit and sort will be used)
+    // * @param map The map function, in javascript, as a string
+    // * @param reduce The reduce function, in javascript, as a string
+    // * @param finalize The finalize function, in javascript, as a string; can
+    // be null
+    // * @param scopeFields Each map entry will be a global variable in all the
+    // functions; can be null
+    // * @return counts and stuff
+    // */
+    // <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q, String
+    // map,
+    // String reduce, String finalize, Map<String, Object> scopeFields,
+    // Class<T> outputType);
+    //
+    // /**
+    // * Runs a map/reduce job at the server; this should be used with a server
+    // * version 1.7.4 or higher
+    // *
+    // * @param <T>
+    // * The type of resulting data
+    // * @param type
+    // * MapreduceType
+    // * @param q
+    // * The query (only the criteria, limit and sort will be used)
+    // * @param outputType
+    // * The type of resulting data; inline is not working yet
+    // * @param baseCommand
+    // * The base command to fill in and send to the server
+    // * @return counts and stuff
+    // */
+    // <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q,
+    // Class<T> outputType, MapReduce baseCommand);
 
     /** The builder for all update operations */
     <T> UpdateOperations<T> createUpdateOperations(Class<T> kind);
@@ -286,21 +288,6 @@ public interface Datastore {
 
     /** Ensures (creating if necessary) the index and direction */
     <T> void ensureIndex(Class<T> clazz, String field, IndexDirection dir);
-
-    /**
-     * Ensures (creating if necessary) the index including the field(s) +
-     * directions
-     */
-    @Deprecated
-    <T> void ensureIndex(Class<T> clazz, IndexFieldDef... fields);
-
-    /**
-     * Ensures (creating if necessary) the index including the field(s) +
-     * directions
-     */
-    @Deprecated
-    <T> void ensureIndex(Class<T> clazz, String name, IndexFieldDef[] fields,
-            boolean unique, boolean dropDupsOnCreate);
 
     /**
      * Ensures (creating if necessary) the index including the field(s) +

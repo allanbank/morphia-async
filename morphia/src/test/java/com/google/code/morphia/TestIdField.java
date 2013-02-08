@@ -114,7 +114,7 @@ public class TestIdField extends TestBase {
 	@Test
     public void testIdFieldNameMapping() throws Exception {
 		Rectangle r = new Rectangle(1, 12);
-		BasicDBObject dbObj = (BasicDBObject) morphia.toDBObject(r);
+		BasicDBObject dbObj = (BasicDBObject) morphia.toDocument(r);
         assertFalse(dbObj.containsField("id"));
         assertTrue(dbObj.containsField(Mapper.ID_KEY));
         assertEquals(4, dbObj.size()); //_id, h, w, className

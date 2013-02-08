@@ -62,10 +62,10 @@ public class EnumSetConverter implements
     public boolean canConvert(MappedClass clazz,
             com.google.code.morphia.state.MappedField field) {
         Class<?> type = field.getResolvedClass();
+        Class<?> typeParam = field.getTypeArgumentClass(0);
 
-        return ENUM_SET_CLASS.isAssignableFrom(type)
-                && (type.getTypeParameters().length > 0)
-                && type.getTypeParameters()[0].getGenericDeclaration().isEnum();
+        return ENUM_SET_CLASS.isAssignableFrom(type) && (typeParam != null)
+                && typeParam.isEnum();
     }
 
     /**
@@ -83,8 +83,8 @@ public class EnumSetConverter implements
         }
 
         if (canConvert(clazz, field)) {
-            Class enumType = field.getDeclaredClass().getTypeParameters()[0]
-                    .getGenericDeclaration();
+
+            Class enumType = field.getTypeArgumentClass(0);
             if (element.getType() == ElementType.ARRAY) {
                 ArrayElement ae = (ArrayElement) element;
                 List<Enum> values = new ArrayList<Enum>();
@@ -92,6 +92,9 @@ public class EnumSetConverter implements
                     values.add(Enum.valueOf(enumType, e.getValueAsString()));
                 }
 
+                if (values.isEmpty()) {
+                    return EnumSet.noneOf(enumType);
+                }
                 return EnumSet.copyOf(values);
             }
         }

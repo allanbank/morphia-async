@@ -274,14 +274,14 @@ public class CustomConvertersTest extends TestBase {
 	@Test @Ignore
 	public void testDBObjectSerialization() {
 		final MyEntity entity = new MyEntity(1l, new A(2));
-		final DBObject dbObject = morphia.toDBObject(entity);
+		final DBObject dbObject = morphia.toDocument(entity);
 		assertEquals(BasicDBObjectBuilder.start("_id", 1l).add("a", 2l).get(),
 				dbObject);
 		// fails with a
 		// com.google.code.morphia.mapping.MappingException: No usable
 		// constructor
 		// for InheritanceTest$A
-		final MyEntity actual = morphia.fromDBObject(MyEntity.class, dbObject);
+		final MyEntity actual = morphia.fromDocument(MyEntity.class, dbObject);
 		assertEquals(entity, actual);
 	}
 
@@ -291,7 +291,7 @@ public class CustomConvertersTest extends TestBase {
 	@Test @Ignore
 	public void testFullBSONSerialization() {
 		final MyEntity entity = new MyEntity(1l, new A(2));
-		final DBObject dbObject = morphia.toDBObject(entity);
+		final DBObject dbObject = morphia.toDocument(entity);
 
 		final byte[] data = new DefaultDBEncoder().encode(dbObject);
 
@@ -301,7 +301,7 @@ public class CustomConvertersTest extends TestBase {
 		// com.google.code.morphia.mapping.MappingException: No usable
 		// constructor
 		// for InheritanceTest$A
-		final MyEntity actual = morphia.fromDBObject(MyEntity.class, decoded);
+		final MyEntity actual = morphia.fromDocument(MyEntity.class, decoded);
 		assertEquals(entity, actual);
 	}
 

@@ -2,7 +2,7 @@ package com.google.code.morphia.mapping.validation;
 
 import java.util.Set;
 
-import com.google.code.morphia.mapping.MappedClass;
+import com.google.code.morphia.state.MappedClass;
 
 /**
  * @author Uwe Schaefer, (us@thomas-daily.de)

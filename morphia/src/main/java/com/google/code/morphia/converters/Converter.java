@@ -67,7 +67,7 @@ public class Converter {
         MappedField id = mapping.getIdField();
         if (id != null) {
             if (id.isWritten()) {
-                fieldConverter.toElement(mapping, id, "_id", id.get(object));
+                builder.add(fieldConverter.toElement(mapping, id, "_id", id.get(object)));
             }
         }
 
@@ -85,7 +85,7 @@ public class Converter {
         }
 
         for (MappedField field : mapping.getFields()) {
-            if (field.isWritten()) {
+            if (field.isWritten() && (field != id) && (field != version)) {
                 builder.add(fieldConverter.toElement(mapping, field,
                         field.getMappedFieldName(), field.get(object)));
             }
@@ -112,7 +112,8 @@ public class Converter {
      *            The document to deserialize into the object.
      * @return The object filled from the document.
      */
-    public Object fromDocument(Class<?> type, Document document) {
+    @SuppressWarnings("unchecked")
+    public <T> T fromDocument(Class<T> type, Document document) {
         MappedClass mapping = cache.getMappingFor(type);
 
         Object object = null;
@@ -179,6 +180,6 @@ public class Converter {
                     + clazz.getCanonicalName() + "' class.", e);
         }
 
-        return object;
+        return (T) object;
     }
 }

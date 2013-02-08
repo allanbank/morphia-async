@@ -120,7 +120,7 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
      */
     @SuppressWarnings("unchecked")
     private BasicFieldConverter<Object> findConverter(Class<?> type) {
-        String typeName = type.getCanonicalName();
+        String typeName = type.getName();
         if (ourNonPrimitiveTypes.contains(typeName)) {
             return null;
         }

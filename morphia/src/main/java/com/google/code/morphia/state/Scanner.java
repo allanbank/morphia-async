@@ -176,7 +176,10 @@ public class Scanner {
         Class<?> c = clazz;
         while (c != ROOT) {
             for (final Field f : c.getDeclaredFields()) {
-                if (!fields.containsKey(f.getName())) {
+                final int fModifiers = f.getModifiers();
+                if (!fields.containsKey(f.getName())
+                        && !Modifier.isFinal(fModifiers)
+                        && !Modifier.isStatic(fModifiers)) {
                     fields.put(f.getName(), f);
                 }
             }

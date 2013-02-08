@@ -15,6 +15,7 @@
  */
 package com.google.code.morphia.state;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +83,7 @@ public class MappedClass {
     /**
      * The complete set of derived classes we have seen.
      */
-    private Set<Class<?>> derivedClasses;
+    private final Set<Class<?>> derivedClasses;
 
     /**
      * The mapping of a field name that uniquely identifies a derived class and
@@ -137,12 +138,19 @@ public class MappedClass {
         this.clazz = clazz;
 
         final String name = clazz.getSimpleName();
-        this.collectionName = name.substring(0, 1).toLowerCase(Locale.ENGLISH)
-                + name.substring(1);
+        if (!name.isEmpty()) {
+            this.collectionName = name.substring(0, 1).toLowerCase(
+                    Locale.ENGLISH)
+                    + name.substring(1);
+        }
+        else {
+            this.collectionName = name;
+        }
 
         this.additionalFieldConverters = new ArrayList<FieldConverter<?>>();
         this.cappedAt = null;
         this.classnameStored = false;
+        this.derivedClasses = new HashSet<Class<?>>();
         this.derivedMapping = new HashMap<String, Class<?>>();
         this.durability = Durability.ACK;
         this.fields = new ArrayList<MappedField>();
@@ -310,6 +318,17 @@ public class MappedClass {
      */
     public MappedField getVersionField() {
         return versionField;
+    }
+
+    /**
+     * Returns true if the class contains the specified annotation.
+     * 
+     * @param annotationClass
+     *            The class for the annotation.
+     * @return True if the class contains the annotation.
+     */
+    public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+        return (clazz.getAnnotation(annotationClass) != null);
     }
 
     /**

@@ -49,11 +49,11 @@ public class TestInterfaces extends TestBase {
 
         Shape rectangle = new Rectangle(2,5);
         
-        DBObject rectangleDbObj = morphia.toDBObject(rectangle);
+        DBObject rectangleDbObj = morphia.toDocument(rectangle);
         shapes.save(rectangleDbObj);
 
         BasicDBObject rectangleDbObjLoaded = (BasicDBObject) shapes.findOne(new BasicDBObject(Mapper.ID_KEY, rectangleDbObj.get(Mapper.ID_KEY)));
-		Shape rectangleLoaded = morphia.fromDBObject(Shape.class, rectangleDbObjLoaded, new DefaultEntityCache());
+		Shape rectangleLoaded = morphia.fromDocument(Shape.class, rectangleDbObjLoaded, new DefaultEntityCache());
 
         assertTrue(rectangle.getArea() == rectangleLoaded.getArea());
         assertTrue(rectangleLoaded instanceof Rectangle);
@@ -64,11 +64,11 @@ public class TestInterfaces extends TestBase {
         shifter.getAvailableShapes().add(new Rectangle(3,3));
         shifter.getAvailableShapes().add(new Circle(4.4));
 
-        DBObject shifterDbObj = morphia.toDBObject(shifter);
+        DBObject shifterDbObj = morphia.toDocument(shifter);
         shapeshifters.save(shifterDbObj);
 
         BasicDBObject shifterDbObjLoaded = (BasicDBObject) shapeshifters.findOne(new BasicDBObject(Mapper.ID_KEY, shifterDbObj.get(Mapper.ID_KEY)));
-		ShapeShifter shifterLoaded = morphia.fromDBObject(ShapeShifter.class, shifterDbObjLoaded, new DefaultEntityCache());
+		ShapeShifter shifterLoaded = morphia.fromDocument(ShapeShifter.class, shifterDbObjLoaded, new DefaultEntityCache());
 
         assertNotNull(shifterLoaded);
         assertNotNull(shifterLoaded.getReferencedShape());

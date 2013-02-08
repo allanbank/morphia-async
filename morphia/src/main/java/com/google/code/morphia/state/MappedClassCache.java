@@ -45,7 +45,7 @@ public class MappedClassCache {
      * @return The mapping information for the class.
      */
     public MappedClass getMappingFor(final Class<?> clazz) {
-        final String name = clazz.getCanonicalName();
+        final String name = clazz.getName();
         MappedClass mapping = cache.get(name);
         if (mapping == null) {
             final Scanner scanner = new Scanner();

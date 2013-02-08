@@ -25,9 +25,11 @@ import com.allanbank.mongodb.MongoFactory;
 import com.allanbank.mongodb.bson.Document;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.converters.Converter;
 import com.google.code.morphia.mapping.Mapper;
 import com.google.code.morphia.mapping.MappingException;
 import com.google.code.morphia.mapping.cache.EntityCache;
+import com.google.code.morphia.state.MappedClassCache;
 import com.google.code.morphia.utils.ReflectionUtils;
 
 /**
@@ -37,30 +39,28 @@ import com.google.code.morphia.utils.ReflectionUtils;
  **/
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class Morphia {
-    private final Mapper mapper;
+    /** The cache of class mappings. */
+    MappedClassCache classCache = new MappedClassCache();
 
     public Morphia() {
-        this(Collections.EMPTY_SET);
+        super();
     }
 
-    public Morphia(Set<Class> classesToMap) {
-        this.mapper = new Mapper();
+    public Morphia(Set<Class<?>> classesToMap) {
         for (Class c : classesToMap) {
             map(c);
         }
     }
 
-    public synchronized Morphia map(Class... entityClasses) {
+    public synchronized Morphia map(Class<?>... entityClasses) {
         if (entityClasses != null && entityClasses.length > 0)
-            for (Class entityClass : entityClasses) {
-                if (!mapper.isMapped(entityClass)) {
-                    mapper.addMappedClass(entityClass);
-                }
+            for (Class<?> entityClass : entityClasses) {
+                classCache.getMappingFor(entityClass);
             }
         return this;
     }
 
-    public synchronized Morphia mapPackageFromClass(Class clazz) {
+    public synchronized Morphia mapPackageFromClass(Class<?> clazz) {
         return mapPackage(clazz.getPackage().getName(), false);
     }
 
@@ -89,12 +89,10 @@ public class Morphia {
     public synchronized Morphia mapPackage(String packageName,
             boolean ignoreInvalidClasses) {
         try {
-            for (Class c : ReflectionUtils.getClasses(packageName)) {
+            for (Class<?> c : ReflectionUtils.getClasses(packageName)) {
                 try {
-                    Embedded embeddedAnn = ReflectionUtils
-                            .getClassEmbeddedAnnotation(c);
-                    Entity enityAnn = ReflectionUtils
-                            .getClassEntityAnnotation(c);
+                    Embedded embeddedAnn = c.getAnnotation(Embedded.class);
+                    Entity enityAnn = c.getAnnotation(Entity.class);
                     if (enityAnn != null || embeddedAnn != null) {
                         map(c);
                     }
@@ -119,71 +117,30 @@ public class Morphia {
         }
     }
 
-    /**
-     * Check whether a specific class is mapped by this instance.
-     * 
-     * @param entityClass
-     *            the class we want to check
-     * @return true if the class is mapped, else false
-     */
-    public boolean isMapped(Class entityClass) {
-        return mapper.isMapped(entityClass);
+    public <T> T fromDocument(Class<T> entityClass, Document dbObject) {
+        Converter converter = new Converter(classCache);
+
+        return converter.fromDocument(entityClass, dbObject);
     }
 
-    public <T> T fromDBObject(Class<T> entityClass, Document dbObject) {
-        return fromDBObject(entityClass, dbObject, mapper.createEntityCache());
-    }
-
-    public <T> T fromDBObject(Class<T> entityClass, Document dbObject,
+    public <T> T fromDocument(Class<T> entityClass, Document dbObject,
             EntityCache cache) {
-        if (!entityClass.isInterface() && !mapper.isMapped(entityClass)) {
-            throw new MappingException("Trying to map to an unmapped class: "
-                    + entityClass.getName());
-        }
         try {
-            return (T) mapper.fromDBObject(entityClass, dbObject, cache);
+            return (T) mapper.fromDocument(entityClass, dbObject, cache);
         }
         catch (Exception e) {
             throw new MappingException("Could not map entity from DBObject", e);
         }
     }
 
-    public Document toDBObject(Object entity) {
-        try {
-            return mapper.toDBObject(entity);
-        }
-        catch (Exception e) {
-            throw new MappingException("Could not map entity to DBObject", e);
-        }
+    public Document toDocument(Object entity) {
+        Converter converter = new Converter(classCache);
+
+        return converter.toDocument(entity);
     }
 
     public Mapper getMapper() {
         return this.mapper;
-    }
-
-    /**
-     * This will create a new MongoClient instance; it is best to use a
-     * MongoClient singleton instance
-     */
-    @Deprecated
-    public Datastore createDatastore(String dbName) {
-        return createDatastore(dbName, null, null);
-    }
-
-    /**
-     * This will create a new MongoClient instance; it is best to use a
-     * MongoClient singleton instance
-     */
-    @Deprecated
-    public Datastore createDatastore(String dbName, String user, char[] pw) {
-        try {
-            return createDatastore(
-                    MongoFactory.createClient("mongodb://localhost:27017"),
-                    dbName, user, pw);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /** It is best to use a MongoClient singleton instance here **/

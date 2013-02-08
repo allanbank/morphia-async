@@ -22,7 +22,7 @@ public class TestMapping extends TestBase {
         Class_level_three sp = new Class_level_three();
 
         //Old way
-        Document wrapObj = morphia.toDBObject(sp);  //the error points here from the user
+        Document wrapObj = morphia.toDocument(sp);  //the error points here from the user
         ds.getDB().getCollection("testColl").save(wrapObj);
         
         
