@@ -47,7 +47,7 @@ public class ConverterNotFoundException extends RuntimeException {
      * @param cause
      *            The root cause of the failure.
      */
-    public ConverterNotFoundException(final String msg, Throwable cause) {
+    public ConverterNotFoundException(final String msg, final Throwable cause) {
         super(msg, cause);
     }
 }

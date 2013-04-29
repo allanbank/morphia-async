@@ -44,34 +44,20 @@ public class DoubleConverter extends AbstractBasicFieldConverter<Double> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link DoubleElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Double object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new DoubleElement(name, object.doubleValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Double}.
      * </p>
      */
     @Override
-    public Double fromElement(Class<?> mappingType, Element element) {
+    public Double fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.DOUBLE) {
-            double value = ((DoubleElement) element).getDoubleValue();
+            final double value = ((DoubleElement) element).getDoubleValue();
             return Double.valueOf(value);
         }
         else if (element instanceof NumericElement) {
-            double value = ((NumericElement) element).getDoubleValue();
+            final double value = ((NumericElement) element).getDoubleValue();
             return Double.valueOf(value);
         }
         else if ((element.getType() == ElementType.STRING)
@@ -79,7 +65,7 @@ public class DoubleConverter extends AbstractBasicFieldConverter<Double> {
             try {
                 return Double.valueOf(element.getValueAsString());
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
                 throw new MappingException("Invalid double string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -87,5 +73,20 @@ public class DoubleConverter extends AbstractBasicFieldConverter<Double> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Double.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link DoubleElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Double object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new DoubleElement(name, object.doubleValue());
     }
 }

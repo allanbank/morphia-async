@@ -15,38 +15,44 @@ import com.google.code.morphia.annotations.Id;
 @SuppressWarnings("unchecked")
 public class MorphiaKeyIterator<T> implements Iterable<Key<T>>,
         Iterator<Key<T>> {
-    Iterator wrapped;
-    Morphia m;
     Class<T> clazz;
     String kind;
+    Morphia m;
+    Iterator wrapped;
 
-    public MorphiaKeyIterator(Iterator it, Morphia m, Class<T> clazz,
-            String kind) {
+    public MorphiaKeyIterator(final Iterator it, final Morphia m,
+            final Class<T> clazz, final String kind) {
         this.wrapped = it;
         this.m = m;
         this.clazz = clazz;
         this.kind = kind;
     }
 
+    @Override
+    public boolean hasNext() {
+        if (wrapped == null) {
+            return false;
+        }
+        return wrapped.hasNext();
+    }
+
+    @Override
     public Iterator<Key<T>> iterator() {
         return this;
     }
 
-    public boolean hasNext() {
-        if (wrapped == null)
-            return false;
-        return wrapped.hasNext();
-    }
-
+    @Override
     public Key<T> next() {
-        if (!hasNext())
+        if (!hasNext()) {
             throw new NoSuchElementException();
-        Document dbObj = (Document) wrapped.next();
-        Key<T> key = new Key<T>(kind, dbObj.get(Id.ID_FIELD));
+        }
+        final Document dbObj = (Document) wrapped.next();
+        final Key<T> key = new Key<T>(kind, dbObj.get(Id.ID_FIELD));
         key.setKindClass(this.clazz);
         return key;
     }
 
+    @Override
     public void remove() {
         wrapped.remove();
     }

@@ -21,27 +21,29 @@ import com.google.code.morphia.utils.ReflectionUtils;
 public class MapNotSerializable extends FieldConstraint {
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
         if (Map.class.isAssignableFrom(mf.getResolvedClass())) {
             if (mf.hasAnnotation(Serialized.class)) {
-                Class<?> keyClass = ReflectionUtils.getParameterizedClass(
-                        mf.getField(), 0);
-                Class<?> valueClass = ReflectionUtils.getParameterizedClass(
-                        mf.getField(), 1);
+                final Class<?> keyClass = ReflectionUtils
+                        .getParameterizedClass(mf.getField(), 0);
+                final Class<?> valueClass = ReflectionUtils
+                        .getParameterizedClass(mf.getField(), 1);
                 if (keyClass != null) {
-                    if (!Serializable.class.isAssignableFrom(keyClass))
+                    if (!Serializable.class.isAssignableFrom(keyClass)) {
                         ve.add(new ConstraintViolation(Level.FATAL, mc, mf,
                                 this.getClass(), "Key class ("
                                         + keyClass.getName()
                                         + ") is not Serializable"));
+                    }
                 }
                 if (valueClass != null) {
-                    if (!Serializable.class.isAssignableFrom(keyClass))
+                    if (!Serializable.class.isAssignableFrom(keyClass)) {
                         ve.add(new ConstraintViolation(Level.FATAL, mc, mf,
                                 this.getClass(), "Value class ("
                                         + valueClass.getName()
                                         + ") is not Serializable"));
+                    }
                 }
             }
         }

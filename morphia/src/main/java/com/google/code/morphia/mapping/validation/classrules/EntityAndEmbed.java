@@ -29,7 +29,7 @@ public class EntityAndEmbed implements ClassConstraint {
      * </p>
      */
     @Override
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
 
         if (mc.hasAnnotation(Entity.class) && mc.hasAnnotation(Embedded.class)) {
             ve.add(new ConstraintViolation(Level.FATAL, mc, this.getClass(),

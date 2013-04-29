@@ -21,20 +21,21 @@ import com.google.code.morphia.state.MappedField;
 public class VersionMisuse extends FieldConstraint {
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
         if (mf.hasAnnotation(Version.class)) {
-            Class<?> type = mf.getResolvedClass();
+            final Class<?> type = mf.getResolvedClass();
             if (Long.class.equals(type) || long.class.equals(type)) {
 
                 // TODO: Replace this will a read ObjectFactory call -- requires
                 // Mapper instance.
                 try {
-                    Object testInstance = mc.getMappedClass().newInstance();
-                    LongConverter converter = new LongConverter();
+                    final Object testInstance = mc.getMappedClass()
+                            .newInstance();
+                    final LongConverter converter = new LongConverter();
 
-                    Element e = converter.toElement(mc.getMappedClass(), "f",
-                            (Long) mf.get(testInstance));
+                    final Element e = converter.toElement(mc.getMappedClass(),
+                            "f", (Long) mf.get(testInstance));
 
                     if ((e.getType() == ElementType.NULL)
                             || Long.valueOf(0).equals(e.getValueAsObject())) {
@@ -51,7 +52,7 @@ public class VersionMisuse extends FieldConstraint {
                                         + "must be initialized to null or 0 (zero)."));
                     }
                 }
-                catch (InstantiationException e1) {
+                catch (final InstantiationException e1) {
                     ve.add(new ConstraintViolation(Level.WARNING, mc, mf, this
                             .getClass(),
                             "Could not instantiate an instance of the "
@@ -61,7 +62,7 @@ public class VersionMisuse extends FieldConstraint {
                                     + " annotation "
                                     + "is initailized to null or 0 (zero)."));
                 }
-                catch (IllegalAccessException e1) {
+                catch (final IllegalAccessException e1) {
                     ve.add(new ConstraintViolation(Level.WARNING, mc, mf, this
                             .getClass(),
                             "Could not instantiate an instance of the "
@@ -72,10 +73,11 @@ public class VersionMisuse extends FieldConstraint {
                                     + "is initailized to null or 0 (zero)."));
                 }
             }
-            else
+            else {
                 ve.add(new ConstraintViolation(Level.FATAL, mc, mf, this
                         .getClass(), "@" + Version.class.getSimpleName()
                         + " can only be used on a Long/long field."));
+            }
         }
     }
 

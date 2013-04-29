@@ -41,14 +41,14 @@ public @interface Entity {
     /** The ignored field name. */
     public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
 
-    /**
-     * The name for the persistend field. Defaults to the name of the field in
-     * the class.
-     */
-    String value() default IGNORED_FIELDNAME;
-
     /** Controls if the collection created for the entities is capped or not. */
     CappedAt cap() default @CappedAt(0);
+
+    /**
+     * Controls the default write concern or {@link Durability} to use. See
+     * {@link Durability#valueOf(String)} for acceptable values.
+     */
+    String concern() default "";
 
     /**
      * To be replaced. This is a temp hack until polymorphism and discriminators
@@ -63,9 +63,9 @@ public @interface Entity {
     boolean queryNonPrimary() default false;
 
     /**
-     * Controls the default write concern or {@link Durability} to use. See
-     * {@link Durability#valueOf(String)} for acceptable values.
+     * The name for the persistend field. Defaults to the name of the field in
+     * the class.
      */
-    String concern() default "";
+    String value() default IGNORED_FIELDNAME;
 
 }

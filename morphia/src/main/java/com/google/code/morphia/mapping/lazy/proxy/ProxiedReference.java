@@ -9,9 +9,9 @@ package com.google.code.morphia.mapping.lazy.proxy;
  */
 @SuppressWarnings("unchecked")
 public interface ProxiedReference {
-	boolean __isFetched();
+    Class __getReferenceObjClass();
 
-	Class __getReferenceObjClass();
+    boolean __isFetched();
 
-	Object __unwrap();
+    Object __unwrap();
 }

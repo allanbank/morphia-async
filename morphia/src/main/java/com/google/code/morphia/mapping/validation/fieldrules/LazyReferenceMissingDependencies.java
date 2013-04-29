@@ -19,15 +19,16 @@ import com.google.code.morphia.state.MappedField;
 public class LazyReferenceMissingDependencies extends FieldConstraint {
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
-        Reference ref = mf.getField().getAnnotation(Reference.class);
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
+        final Reference ref = mf.getField().getAnnotation(Reference.class);
         if (ref != null) {
             if (ref.lazy()) {
-                if (!LazyFeatureDependencies.testDependencyFullFilled())
+                if (!LazyFeatureDependencies.testDependencyFullFilled()) {
                     ve.add(new ConstraintViolation(Level.SEVERE, mc, mf, this
                             .getClass(),
                             "Lazy references need CGLib and Proxytoys in the classpath."));
+                }
             }
         }
     }

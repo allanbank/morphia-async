@@ -18,9 +18,10 @@ import com.google.code.morphia.state.MappedField;
  */
 public class MultipleVersions implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
         MappedField versionField = null;
-        for (MappedField f : mc.getFields()) {
+        for (final MappedField f : mc.getFields()) {
             if (f.hasAnnotation(Version.class)) {
                 if (versionField == null) {
                     versionField = f;

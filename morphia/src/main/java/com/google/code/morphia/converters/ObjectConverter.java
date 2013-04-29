@@ -40,7 +40,7 @@ public class ObjectConverter implements FieldConverter<Object> {
      * @param converter
      *            The converter for the sub documents.
      */
-    public ObjectConverter(Converter converter) {
+    public ObjectConverter(final Converter converter) {
         this.converter = converter;
     }
 
@@ -51,25 +51,8 @@ public class ObjectConverter implements FieldConverter<Object> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overriden to convert the value into a document.
-     * </p>
-     */
-    @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            Object value) {
-        if (value == null) {
-            return new NullElement(name);
-        }
-
-        // TODO - replace with a reference. Maybe a different converter.
-        return new DocumentElement(name, converter.toDocument(value));
     }
 
     /**
@@ -79,8 +62,8 @@ public class ObjectConverter implements FieldConverter<Object> {
      * </p>
      */
     @Override
-    public Object fromElement(MappedClass clazz, MappedField field,
-            Element element) {
+    public Object fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -91,6 +74,23 @@ public class ObjectConverter implements FieldConverter<Object> {
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into an Object for "
                 + field.getResolvedClass().getSimpleName());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overriden to convert the value into a document.
+     * </p>
+     */
+    @Override
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final Object value) {
+        if (value == null) {
+            return new NullElement(name);
+        }
+
+        // TODO - replace with a reference. Maybe a different converter.
+        return new DocumentElement(name, converter.toDocument(value));
     }
 
 }

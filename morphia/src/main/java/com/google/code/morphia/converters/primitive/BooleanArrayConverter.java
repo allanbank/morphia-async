@@ -29,7 +29,8 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @copyright 2010-2013, Allanbank Consulting, Inc., All Rights Reserved
  */
-public class BooleanArrayConverter extends AbstractBasicFieldConverter<boolean[]> {
+public class BooleanArrayConverter extends
+        AbstractBasicFieldConverter<boolean[]> {
 
     /**
      * Creates a new BooleanConverter.
@@ -41,42 +42,24 @@ public class BooleanArrayConverter extends AbstractBasicFieldConverter<boolean[]
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link ArrayElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, boolean[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-
-        BooleanElement[] elements = new BooleanElement[object.length];
-        for (int i = 0; i < object.length; ++i) {
-            elements[i] = new BooleanElement(String.valueOf(i), object[i]);
-        }
-        return new ArrayElement(name, elements);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code ellement} into a {@link Boolean} value.
      * </p>
      */
     @Override
-    public boolean[] fromElement(Class<?> mappingType, Element element) {
+    public boolean[] fromElement(final Class<?> mappingType,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.ARRAY) {
-            BooleanConverter converter = new BooleanConverter();
+            final BooleanConverter converter = new BooleanConverter();
 
-            ArrayElement array = (ArrayElement) element;
-            List<Element> entries = array.getEntries();
+            final ArrayElement array = (ArrayElement) element;
+            final List<Element> entries = array.getEntries();
 
-            boolean[] result = new boolean[entries.size()];
+            final boolean[] result = new boolean[entries.size()];
             for (int i = 0; i < result.length; ++i) {
-                Boolean value = converter.fromElement(mappingType,
+                final Boolean value = converter.fromElement(mappingType,
                         entries.get(i));
                 if (value != null) {
                     result[i] = value.booleanValue();
@@ -91,5 +74,25 @@ public class BooleanArrayConverter extends AbstractBasicFieldConverter<boolean[]
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a boolean[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link ArrayElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final boolean[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+
+        final BooleanElement[] elements = new BooleanElement[object.length];
+        for (int i = 0; i < object.length; ++i) {
+            elements[i] = new BooleanElement(String.valueOf(i), object[i]);
+        }
+        return new ArrayElement(name, elements);
     }
 }

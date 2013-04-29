@@ -27,8 +27,8 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
- * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting, Inc.,
- *            All Rights Reserved
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
 public class CharacterConverter extends AbstractBasicFieldConverter<Character> {
     /**
@@ -41,31 +41,18 @@ public class CharacterConverter extends AbstractBasicFieldConverter<Character> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Character object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, String.valueOf(object.charValue()));
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Character}.
      * </p>
      */
     @Override
-    public Character fromElement(Class<?> mappingType, Element element) {
+    public Character fromElement(final Class<?> mappingType,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
             if (sVal.isEmpty()) {
                 return null;
             }
@@ -74,5 +61,20 @@ public class CharacterConverter extends AbstractBasicFieldConverter<Character> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a char.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Character object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, String.valueOf(object.charValue()));
     }
 }

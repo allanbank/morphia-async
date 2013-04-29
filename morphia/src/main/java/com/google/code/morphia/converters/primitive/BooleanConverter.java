@@ -43,25 +43,11 @@ public class BooleanConverter extends AbstractBasicFieldConverter<Boolean> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link BooleanElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Boolean object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new BooleanElement(name, object.booleanValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code ellement} into a {@link Boolean} value.
      * </p>
      */
     @Override
-    public Boolean fromElement(Class<?> mappingType, Element element) {
+    public Boolean fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -76,11 +62,26 @@ public class BooleanConverter extends AbstractBasicFieldConverter<Boolean> {
         // Handle strings for cases when the boolean is the key
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
             return Boolean.valueOf(Boolean.parseBoolean(sVal));
         }
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a boolean.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link BooleanElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Boolean object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new BooleanElement(name, object.booleanValue());
     }
 }

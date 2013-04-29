@@ -38,17 +38,23 @@ import com.google.code.morphia.utils.IndexDirection;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 public @interface Indexed {
+    /** Create the index in the background? */
+    boolean background() default false;
+
     /**
-     * Indicates the direction of the index (ascending, descending, or both;
-     * default is ascending
+     * Tells the unique index to drop duplicates silently when creating; only
+     * the first will be kept
      */
-    IndexDirection value() default IndexDirection.ASC;
+    boolean dropDups() default false;
 
     /**
      * The name of the index to create; default is to let the mongodb create a
      * name (in the form of key1_1/-1_key2_1/-1...
      */
     String name() default "";
+
+    /** Create the index with the sparse option */
+    boolean sparse() default false;
 
     /**
      * Creates the index as a unique value index; inserting duplicates values in
@@ -57,14 +63,8 @@ public @interface Indexed {
     boolean unique() default false;
 
     /**
-     * Tells the unique index to drop duplicates silently when creating; only
-     * the first will be kept
+     * Indicates the direction of the index (ascending, descending, or both;
+     * default is ascending
      */
-    boolean dropDups() default false;
-
-    /** Create the index in the background? */
-    boolean background() default false;
-
-    /** Create the index with the sparse option */
-    boolean sparse() default false;
+    IndexDirection value() default IndexDirection.ASC;
 }

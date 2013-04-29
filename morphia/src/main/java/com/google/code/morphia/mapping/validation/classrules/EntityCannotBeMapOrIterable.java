@@ -18,7 +18,8 @@ import com.google.code.morphia.state.MappedClass;
  */
 public class EntityCannotBeMapOrIterable implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
 
         if (mc.hasAnnotation(Entity.class)
                 && (Map.class.isAssignableFrom(mc.getMappedClass()) || Iterable.class

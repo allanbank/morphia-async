@@ -24,13 +24,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.allanbank.mongodb.bson.Element;
+import com.google.code.morphia.converters.primitive.BasicFieldConverter;
 import com.google.code.morphia.converters.primitive.BooleanArrayConverter;
 import com.google.code.morphia.converters.primitive.BooleanConverter;
 import com.google.code.morphia.converters.primitive.ByteArrayConverter;
 import com.google.code.morphia.converters.primitive.CharArrayConverter;
 import com.google.code.morphia.converters.primitive.CharacterConverter;
 import com.google.code.morphia.converters.primitive.ClassConverter;
-import com.google.code.morphia.converters.primitive.BasicFieldConverter;
 import com.google.code.morphia.converters.primitive.DateConverter;
 import com.google.code.morphia.converters.primitive.DoubleArrayConverter;
 import com.google.code.morphia.converters.primitive.DoubleConverter;
@@ -49,8 +49,8 @@ import com.google.code.morphia.converters.primitive.StringConverter;
 import com.google.code.morphia.converters.primitive.TimestampConverter;
 import com.google.code.morphia.converters.primitive.URIConverter;
 import com.google.code.morphia.converters.primitive.UUIDConverter;
-import com.google.code.morphia.state.MappedField;
 import com.google.code.morphia.state.MappedClass;
+import com.google.code.morphia.state.MappedField;
 
 /**
  * PrimitiveFieldConverter provides a standard converter for the primitive
@@ -60,17 +60,17 @@ import com.google.code.morphia.state.MappedClass;
  */
 public class PrimitiveFieldConverter implements FieldConverter<Object> {
 
+    /** The cache byt type name of the converter to use. */
+    private static final ConcurrentMap<String, BasicFieldConverter<Object>> ourConverterByType;
+
     /** The list of primitive converters to delegate to. */
     private static final List<BasicFieldConverter<?>> ourConverters;
 
     /** Cache of the type names that are not convertable by this class. */
     private static final Set<String> ourNonPrimitiveTypes;
 
-    /** The cache byt type name of the converter to use. */
-    private static final ConcurrentMap<String, BasicFieldConverter<Object>> ourConverterByType;
-
     static {
-        List<BasicFieldConverter<?>> converters = new ArrayList<BasicFieldConverter<?>>();
+        final List<BasicFieldConverter<?>> converters = new ArrayList<BasicFieldConverter<?>>();
 
         converters.add(new BooleanArrayConverter());
         converters.add(new BooleanConverter());
@@ -111,6 +111,59 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return true if the {@link MappedField#getDeclaredClass()}
+     * is convertable by a primative converter, false otherwise.
+     * </p>
+     */
+    @Override
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
+        final Class<?> mappedType = field.getResolvedClass();
+
+        return (findConverter(mappedType) != null);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the field based on the appropriate primative
+     * converter.
+     * </p>
+     */
+    @Override
+    public Object fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
+        final Class<?> mappedType = field.getResolvedClass();
+
+        final BasicFieldConverter<Object> converter = findConverter(mappedType);
+        if (converter != null) {
+            return converter.fromElement(mappedType, element);
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the field based on the appropriate primative
+     * converter.
+     * </p>
+     */
+    @Override
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final Object object) {
+        final Class<?> mappedType = field.getResolvedClass();
+        final BasicFieldConverter<Object> converter = findConverter(mappedType);
+        if (converter != null) {
+            return converter.toElement(mappedType, name, object);
+        }
+
+        return null;
+    }
+
+    /**
      * Locates the appropriate converter based on the specified type.
      * 
      * @param type
@@ -119,8 +172,8 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
      *         found.
      */
     @SuppressWarnings("unchecked")
-    private BasicFieldConverter<Object> findConverter(Class<?> type) {
-        String typeName = type.getName();
+    private BasicFieldConverter<Object> findConverter(final Class<?> type) {
+        final String typeName = type.getName();
         if (ourNonPrimitiveTypes.contains(typeName)) {
             return null;
         }
@@ -129,7 +182,7 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
                 .get(typeName);
         if (converter == null) {
             // Have to search.
-            for (BasicFieldConverter<?> c : ourConverters) {
+            for (final BasicFieldConverter<?> c : ourConverters) {
                 if (c.canConvert(type)) {
                     converter = (BasicFieldConverter<Object>) c;
                     ourConverterByType.put(typeName, converter);
@@ -144,58 +197,5 @@ public class PrimitiveFieldConverter implements FieldConverter<Object> {
             }
         }
         return converter;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to return true if the {@link MappedField#getDeclaredClass()}
-     * is convertable by a primative converter, false otherwise.
-     * </p>
-     */
-    @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
-        Class<?> mappedType = field.getResolvedClass();
-
-        return (findConverter(mappedType) != null);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the field based on the appropriate primative
-     * converter.
-     * </p>
-     */
-    @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            Object object) {
-        Class<?> mappedType = field.getResolvedClass();
-        BasicFieldConverter<Object> converter = findConverter(mappedType);
-        if (converter != null) {
-            return converter.toElement(mappedType, name, object);
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the field based on the appropriate primative
-     * converter.
-     * </p>
-     */
-    @Override
-    public Object fromElement(MappedClass clazz, MappedField field,
-            Element element) {
-        Class<?> mappedType = field.getResolvedClass();
-
-        BasicFieldConverter<Object> converter = findConverter(mappedType);
-        if (converter != null) {
-            return converter.fromElement(mappedType, element);
-        }
-
-        return null;
     }
 }

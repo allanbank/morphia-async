@@ -17,6 +17,24 @@ import java.util.zip.GZIPOutputStream;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  */
 public class Serializer {
+    /** deserializes DBBinary/byte[] to object */
+    public static Object deserialize(final byte[] data, final boolean zipped)
+            throws IOException, ClassNotFoundException {
+        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        InputStream is = bais;
+        try {
+            if (zipped) {
+                is = new GZIPInputStream(is);
+            }
+
+            final ObjectInputStream ois = new ObjectInputStream(is);
+            return ois.readObject();
+        }
+        finally {
+            is.close();
+        }
+    }
+
     /** serializes object to byte[] */
     public static byte[] serialize(final Object o, final boolean zip)
             throws IOException {
@@ -31,24 +49,6 @@ public class Serializer {
         oos.close();
 
         return baos.toByteArray();
-    }
-
-    /** deserializes DBBinary/byte[] to object */
-    public static Object deserialize(final byte[] data, final boolean zipped)
-            throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        InputStream is = bais;
-        try {
-            if (zipped) {
-                is = new GZIPInputStream(is);
-            }
-
-            final ObjectInputStream ois = new ObjectInputStream(is);
-            return ois.readObject();
-        }
-        finally {
-            is.close();
-        }
     }
 
 }

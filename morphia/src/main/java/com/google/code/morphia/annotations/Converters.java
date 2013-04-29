@@ -38,7 +38,7 @@ import com.google.code.morphia.converters.FieldConverter;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 public @interface Converters {
-    
+
     /** The converters to be used. */
     Class<? extends FieldConverter<?>>[] value();
 }

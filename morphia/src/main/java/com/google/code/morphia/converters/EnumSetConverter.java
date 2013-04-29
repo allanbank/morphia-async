@@ -59,10 +59,10 @@ public class EnumSetConverter implements
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field) {
-        Class<?> type = field.getResolvedClass();
-        Class<?> typeParam = field.getTypeArgumentClass(0);
+    public boolean canConvert(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field) {
+        final Class<?> type = field.getResolvedClass();
+        final Class<?> typeParam = field.getTypeArgumentClass(0);
 
         return ENUM_SET_CLASS.isAssignableFrom(type) && (typeParam != null)
                 && typeParam.isEnum();
@@ -76,19 +76,20 @@ public class EnumSetConverter implements
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public EnumSet<? extends Enum<?>> fromElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, Element element) {
+    public EnumSet<? extends Enum<?>> fromElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
 
         if (canConvert(clazz, field)) {
 
-            Class enumType = field.getTypeArgumentClass(0);
+            final Class enumType = field.getTypeArgumentClass(0);
             if (element.getType() == ElementType.ARRAY) {
-                ArrayElement ae = (ArrayElement) element;
-                List<Enum> values = new ArrayList<Enum>();
-                for (Element e : ae.getEntries()) {
+                final ArrayElement ae = (ArrayElement) element;
+                final List<Enum> values = new ArrayList<Enum>();
+                for (final Element e : ae.getEntries()) {
                     values.add(Enum.valueOf(enumType, e.getValueAsString()));
                 }
 
@@ -111,15 +112,15 @@ public class EnumSetConverter implements
      * </p>
      */
     @Override
-    public Element toElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, String name,
-            EnumSet<? extends Enum<?>> value) {
+    public Element toElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final String name, final EnumSet<? extends Enum<?>> value) {
         if (value == null) {
             return new NullElement(name);
         }
 
-        ArrayBuilder ab = BuilderFactory.startArray();
-        for (Enum<?> e : value) {
+        final ArrayBuilder ab = BuilderFactory.startArray();
+        for (final Enum<?> e : value) {
             ab.add(e.name());
         }
         return new ArrayElement(name, ab.build());

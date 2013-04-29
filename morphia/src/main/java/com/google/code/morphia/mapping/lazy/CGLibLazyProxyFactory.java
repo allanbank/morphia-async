@@ -26,60 +26,71 @@ import com.thoughtworks.proxy.toys.dispatch.Dispatching;
  */
 @SuppressWarnings("unchecked")
 public class CGLibLazyProxyFactory implements LazyProxyFactory {
-	private final CglibProxyFactory factory = new CglibProxyFactory();
-	public CGLibLazyProxyFactory() {
-	}
+    private final CglibProxyFactory factory = new CglibProxyFactory();
 
-	public <T> T createProxy(final Class<T> targetClass, final Key<T> key,
-			final DatastoreProvider p) {
+    public CGLibLazyProxyFactory() {
+    }
 
-		SerializableEntityObjectReference objectReference = new SerializableEntityObjectReference(
-				targetClass, p, key);
-		
-		T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] { targetClass,
-				Serializable.class }, factory,
-				objectReference, DelegationMode.SIGNATURE).proxy();
+    @Override
+    public <T extends Collection> T createListProxy(final T listToProxy,
+            final Class referenceObjClass, final boolean ignoreMissing,
+            final DatastoreProvider p) {
+        final Class<? extends Collection> targetClass = listToProxy.getClass();
+        final SerializableCollectionObjectReference objectReference = new SerializableCollectionObjectReference(
+                listToProxy, referenceObjClass, ignoreMissing, p);
 
+        final T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] {
+                targetClass, Serializable.class }, factory, objectReference,
+                DelegationMode.SIGNATURE).proxy();
+        final T proxy = (T) Dispatching
+                .proxy(targetClass,
+                        new Class[] { ProxiedEntityReferenceList.class,
+                                targetClass, Serializable.class })
+                .with(objectReference, backend).build(factory);
 
-		T proxy = Dispatching.proxy(targetClass,
-				new Class[] { ProxiedEntityReference.class, targetClass, Serializable.class }).with(objectReference,
-				backend).build(factory);
-		
-		return proxy;
+        return proxy;
 
-	}
+    }
 
-	public <T extends Collection> T createListProxy(final T listToProxy,
-			final Class referenceObjClass, final boolean ignoreMissing,
-			final DatastoreProvider p) {
-		Class<? extends Collection> targetClass = listToProxy.getClass();
-		SerializableCollectionObjectReference objectReference = new SerializableCollectionObjectReference(
-				listToProxy, referenceObjClass, ignoreMissing, p);
+    @Override
+    public <T extends Map> T createMapProxy(final T mapToProxy,
+            final Class referenceObjClass, final boolean ignoreMissing,
+            final DatastoreProvider p) {
+        final Class<? extends Map> targetClass = mapToProxy.getClass();
+        final SerializableMapObjectReference objectReference = new SerializableMapObjectReference(
+                mapToProxy, referenceObjClass, ignoreMissing, p);
 
-		T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] { targetClass, Serializable.class }, factory,
-				objectReference, DelegationMode.SIGNATURE).proxy();
-		T proxy = (T) Dispatching.proxy(targetClass,
-				new Class[] { ProxiedEntityReferenceList.class, targetClass, Serializable.class }).with(
-				objectReference, backend).build(factory);
-		
-		return proxy;
+        final T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] {
+                targetClass, Serializable.class }, factory, objectReference,
+                DelegationMode.SIGNATURE).proxy();
+        final T proxy = (T) Dispatching
+                .proxy(targetClass,
+                        new Class[] { ProxiedEntityReferenceMap.class,
+                                targetClass, Serializable.class })
+                .with(objectReference, backend).build(factory);
 
-	}
+        return proxy;
 
-	public <T extends Map> T createMapProxy(final T mapToProxy,
-			final Class referenceObjClass, final boolean ignoreMissing,
-			final DatastoreProvider p) {
-		Class<? extends Map> targetClass = mapToProxy.getClass();
-		SerializableMapObjectReference objectReference = new SerializableMapObjectReference(
-				mapToProxy, referenceObjClass, ignoreMissing, p);
+    }
 
-		T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] { targetClass, Serializable.class }, factory,
-				objectReference, DelegationMode.SIGNATURE).proxy();
-		T proxy = (T) Dispatching.proxy(targetClass,
-				new Class[] { ProxiedEntityReferenceMap.class, targetClass, Serializable.class }).with(objectReference,
-				backend).build(factory);
+    @Override
+    public <T> T createProxy(final Class<T> targetClass, final Key<T> key,
+            final DatastoreProvider p) {
 
-		return proxy;
+        final SerializableEntityObjectReference objectReference = new SerializableEntityObjectReference(
+                targetClass, p, key);
 
-	}
+        final T backend = (T) new NonFinalizingHotSwappingInvoker(new Class[] {
+                targetClass, Serializable.class }, factory, objectReference,
+                DelegationMode.SIGNATURE).proxy();
+
+        final T proxy = Dispatching
+                .proxy(targetClass,
+                        new Class[] { ProxiedEntityReference.class,
+                                targetClass, Serializable.class })
+                .with(objectReference, backend).build(factory);
+
+        return proxy;
+
+    }
 }

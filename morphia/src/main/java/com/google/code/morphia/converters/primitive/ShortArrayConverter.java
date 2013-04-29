@@ -41,43 +41,24 @@ public class ShortArrayConverter extends AbstractBasicFieldConverter<short[]> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link ArrayElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, short[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-
-        IntegerElement[] elements = new IntegerElement[object.length];
-        for (short i = 0; i < object.length; ++i) {
-            elements[i] = new IntegerElement(String.valueOf(i), object[i]);
-        }
-        return new ArrayElement(name, elements);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code element} into a {@link Short} value.
      * </p>
      */
     @Override
-    public short[] fromElement(Class<?> mappingType, Element element) {
+    public short[] fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.ARRAY) {
-            ShortConverter converter = new ShortConverter();
+            final ShortConverter converter = new ShortConverter();
 
-            ArrayElement array = (ArrayElement) element;
-            List<Element> entries = array.getEntries();
+            final ArrayElement array = (ArrayElement) element;
+            final List<Element> entries = array.getEntries();
 
-            short[] result = new short[entries.size()];
+            final short[] result = new short[entries.size()];
             for (short i = 0; i < result.length; ++i) {
-                Short value = converter
-                        .fromElement(mappingType, entries.get(i));
+                final Short value = converter.fromElement(mappingType,
+                        entries.get(i));
                 if (value != null) {
                     result[i] = value.shortValue();
                 }
@@ -91,5 +72,25 @@ public class ShortArrayConverter extends AbstractBasicFieldConverter<short[]> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " shorto a short[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link ArrayElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final short[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+
+        final IntegerElement[] elements = new IntegerElement[object.length];
+        for (short i = 0; i < object.length; ++i) {
+            elements[i] = new IntegerElement(String.valueOf(i), object[i]);
+        }
+        return new ArrayElement(name, elements);
     }
 }

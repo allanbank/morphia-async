@@ -58,7 +58,7 @@ public class MapConverter implements FieldConverter<Map<?, ?>> {
      * @param converter
      *            The converter for sub fields.
      */
-    public MapConverter(CachingFieldConverter converter) {
+    public MapConverter(final CachingFieldConverter converter) {
         this.converter = converter;
     }
 
@@ -69,8 +69,47 @@ public class MapConverter implements FieldConverter<Map<?, ?>> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
         return MAP_CLASS.isAssignableFrom(field.getResolvedClass());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@link DocumentElement} back into a map.
+     * </p>
+     */
+    @Override
+    public Map<?, ?> fromElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
+            return null;
+        }
+        else if (element.getType() == ElementType.DOCUMENT) {
+            final MappedField keyField = new MappedField();
+            final MappedField valueField = new MappedField();
+
+            keyField.mapFor("key", field.getTypeArgumentClass(0));
+            valueField.mapFor("value", field.getTypeArgumentClass(1));
+
+            final Map<Object, Object> values = newMap(field.getResolvedClass(),
+                    HASH_MAP_CLASS);
+
+            for (final Element e : ((DocumentElement) element)) {
+
+                final Object key = converter.fromElement(clazz, keyField,
+                        new StringElement("key", e.getName()));
+                final Object value = converter
+                        .fromElement(clazz, valueField, e);
+
+                values.put(key, value);
+            }
+            return values;
+        }
+
+        throw new MappingException("Could not figure out how to map a "
+                + element.getClass().getSimpleName() + " into a Map.");
     }
 
     /**
@@ -81,67 +120,30 @@ public class MapConverter implements FieldConverter<Map<?, ?>> {
      * </p>
      */
     @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            Map<?, ?> value) {
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final Map<?, ?> value) {
         if (value == null) {
             return new NullElement(name);
         }
 
-        MappedField keyField = new MappedField();
-        MappedField valueField = new MappedField();
+        final MappedField keyField = new MappedField();
+        final MappedField valueField = new MappedField();
 
         keyField.mapFor("key", field.getTypeArgumentClass(0));
         valueField.mapFor("value", field.getTypeArgumentClass(1));
 
-        DocumentBuilder subDoc = BuilderFactory.start();
-        for (Map.Entry entry : value.entrySet()) {
+        final DocumentBuilder subDoc = BuilderFactory.start();
+        for (final Map.Entry entry : value.entrySet()) {
             // Resolve the key string to use.
-            Element key = converter.toElement(clazz, keyField, "key",
+            final Element key = converter.toElement(clazz, keyField, "key",
                     entry.getKey());
 
-            String subName = key.getValueAsString();
+            final String subName = key.getValueAsString();
             subDoc.add(converter.toElement(clazz, valueField, subName,
                     entry.getValue()));
         }
 
         return new DocumentElement(name, subDoc.build());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the {@link DocumentElement} back into a map.
-     * </p>
-     */
-    @Override
-    public Map<?, ?> fromElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, Element element) {
-        if ((element == null) || (element.getType() == ElementType.NULL)) {
-            return null;
-        }
-        else if (element.getType() == ElementType.DOCUMENT) {
-            MappedField keyField = new MappedField();
-            MappedField valueField = new MappedField();
-
-            keyField.mapFor("key", field.getTypeArgumentClass(0));
-            valueField.mapFor("value", field.getTypeArgumentClass(1));
-
-            final Map<Object, Object> values = newMap(field.getResolvedClass(),
-                    HASH_MAP_CLASS);
-
-            for (Element e : ((DocumentElement) element)) {
-
-                Object key = converter.fromElement(clazz, keyField,
-                        new StringElement("key", e.getName()));
-                Object value = converter.fromElement(clazz, valueField, e);
-
-                values.put(key, value);
-            }
-            return values;
-        }
-
-        throw new MappingException("Could not figure out how to map a "
-                + element.getClass().getSimpleName() + " into a Map.");
     }
 
     /**
@@ -154,21 +156,21 @@ public class MapConverter implements FieldConverter<Map<?, ?>> {
      *            The fallback type to create.
      * @return The object created.
      */
-    private Map<Object, Object> newMap(Class<?> type,
+    private Map<Object, Object> newMap(final Class<?> type,
             final Class<? extends Map> fallbackType) {
         try {
             return (Map<Object, Object>) type.newInstance();
         }
-        catch (Exception error) {
+        catch (final Exception error) {
             try {
                 return fallbackType.newInstance();
             }
-            catch (InstantiationException e) {
+            catch (final InstantiationException e) {
                 throw new MappingException(
                         "Could not create a object of type '"
                                 + fallbackType.getSimpleName() + "'.", e);
             }
-            catch (IllegalAccessException e) {
+            catch (final IllegalAccessException e) {
                 throw new MappingException(
                         "Could not create a object of type '"
                                 + fallbackType.getSimpleName() + "'.", e);

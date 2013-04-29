@@ -3,46 +3,36 @@ package com.google.code.morphia.query;
 /**
  * 
  * @author Scott Hernandez
- *
+ * 
  */
 public enum FilterOperator {
-	NEAR("$near"),
-	WITHIN("$within"),
-	WITHIN_CIRCLE("$center"),
-	WITHIN_BOX("$box"),
-	EQUAL("$eq"),
-	GREATER_THAN("$gt"),
-	GREATER_THAN_OR_EQUAL("$gte"),
-	LESS_THAN("$lt"),
-	LESS_THAN_OR_EQUAL("$lte"),
-	EXISTS("$exists"),
-	TYPE("$type"),
-	NOT("$not"),
-	MOD("$mod"),
-	SIZE("$size"),
-	IN("$in"),
-	NOT_IN("$nin"),
-	ALL("$all"),
-	ELEMENT_MATCH("$elemMatch"),
-	NOT_EQUAL("$ne"),
-	WHERE("$where");
-	
-	private String value;
-	private FilterOperator(String val) {
-		value = val;
-	}
-	
-	private boolean equals(String val) {
-		return value.equals(val);
-	}
+    ALL("$all"), ELEMENT_MATCH("$elemMatch"), EQUAL("$eq"), EXISTS("$exists"), GREATER_THAN(
+            "$gt"), GREATER_THAN_OR_EQUAL("$gte"), IN("$in"), LESS_THAN("$lt"), LESS_THAN_OR_EQUAL(
+            "$lte"), MOD("$mod"), NEAR("$near"), NOT("$not"), NOT_EQUAL("$ne"), NOT_IN(
+            "$nin"), SIZE("$size"), TYPE("$type"), WHERE("$where"), WITHIN(
+            "$within"), WITHIN_BOX("$box"), WITHIN_CIRCLE("$center");
 
-	public String val() { return value;}
-	
-	public static FilterOperator fromString(String val) {
-		for (int i = 0; i < values().length; i++) {
-			FilterOperator fo = values()[i];
-			if(fo.equals(val)) return fo;
-		}
-		return null;
-	}
+    public static FilterOperator fromString(final String val) {
+        for (int i = 0; i < values().length; i++) {
+            final FilterOperator fo = values()[i];
+            if (fo.equals(val)) {
+                return fo;
+            }
+        }
+        return null;
+    }
+
+    private String value;
+
+    private FilterOperator(final String val) {
+        value = val;
+    }
+
+    public String val() {
+        return value;
+    }
+
+    private boolean equals(final String val) {
+        return value.equals(val);
+    }
 }

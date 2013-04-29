@@ -16,11 +16,12 @@
 package com.google.code.morphia.converters;
 
 import com.allanbank.mongodb.bson.Element;
-import com.google.code.morphia.state.MappedField;
 import com.google.code.morphia.state.MappedClass;
+import com.google.code.morphia.state.MappedField;
 
 /**
- * FieldConverter provides an interface for the converters of fields to implement.
+ * FieldConverter provides an interface for the converters of fields to
+ * implement.
  * 
  * @param <T>
  *            The type mapped by this converter.
@@ -42,6 +43,19 @@ public interface FieldConverter<T> {
     public boolean canConvert(MappedClass clazz, MappedField field);
 
     /**
+     * Converts an element into the specified object type.
+     * 
+     * @param clazz
+     *            The information on the outer class that is being converted.
+     * @param field
+     *            Details on the field that is being converted.
+     * @param element
+     *            The element containing the mapped type.
+     * @return The converted object.
+     */
+    public T fromElement(MappedClass clazz, MappedField field, Element element);
+
+    /**
      * Converts the object to an element of the specified type.
      * 
      * @param clazz
@@ -56,17 +70,4 @@ public interface FieldConverter<T> {
      */
     public Element toElement(MappedClass clazz, MappedField field, String name,
             T value);
-
-    /**
-     * Converts an element into the specified object type.
-     * 
-     * @param clazz
-     *            The information on the outer class that is being converted.
-     * @param field
-     *            Details on the field that is being converted.
-     * @param element
-     *            The element containing the mapped type.
-     * @return The converted object.
-     */
-    public T fromElement(MappedClass clazz, MappedField field, Element element);
 }

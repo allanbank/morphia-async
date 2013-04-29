@@ -41,9 +41,9 @@ public @interface Property {
     /** The ignored field name. */
     public static final String IGNORED_FIELDNAME = ".";
 
-    /** The name of the key to store the field in; Defaults to the field name. */
-    String value() default IGNORED_FIELDNAME;
-
     /** Specify the concrete class to instantiate. */
     Class<?> concreteClass() default Object.class;
+
+    /** The name of the key to store the field in; Defaults to the field name. */
+    String value() default IGNORED_FIELDNAME;
 }

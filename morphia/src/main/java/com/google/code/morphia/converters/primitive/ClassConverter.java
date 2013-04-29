@@ -42,36 +42,23 @@ public class ClassConverter extends AbstractBasicFieldConverter<Class<?>> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Class<?> object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, object.getCanonicalName());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Class}.
      * </p>
      */
     @Override
-    public Class<?> fromElement(Class<?> mappingType, Element element) {
+    public Class<?> fromElement(final Class<?> mappingType,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
 
             try {
                 return Class.forName(sVal);
             }
-            catch (ClassNotFoundException e) {
+            catch (final ClassNotFoundException e) {
                 throw new MappingException(
                         "Invalid class name '" + sVal + "'.", e);
             }
@@ -79,5 +66,20 @@ public class ClassConverter extends AbstractBasicFieldConverter<Class<?>> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Class.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Class<?> object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, object.getCanonicalName());
     }
 }

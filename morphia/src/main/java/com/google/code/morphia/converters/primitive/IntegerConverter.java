@@ -43,34 +43,20 @@ public class IntegerConverter extends AbstractBasicFieldConverter<Integer> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link IntegerElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Integer object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new IntegerElement(name, object.intValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Integer}.
      * </p>
      */
     @Override
-    public Integer fromElement(Class<?> mappingType, Element element) {
+    public Integer fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.INTEGER) {
-            int value = ((IntegerElement) element).getIntValue();
+            final int value = ((IntegerElement) element).getIntValue();
             return Integer.valueOf(value);
         }
         else if (element instanceof NumericElement) {
-            int value = ((NumericElement) element).getIntValue();
+            final int value = ((NumericElement) element).getIntValue();
             return Integer.valueOf(value);
         }
         else if ((element.getType() == ElementType.STRING)
@@ -78,7 +64,7 @@ public class IntegerConverter extends AbstractBasicFieldConverter<Integer> {
             try {
                 return Integer.valueOf(element.getValueAsString());
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
                 throw new MappingException("Invalid integer string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -86,5 +72,20 @@ public class IntegerConverter extends AbstractBasicFieldConverter<Integer> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Integer.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link IntegerElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Integer object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new IntegerElement(name, object.intValue());
     }
 }

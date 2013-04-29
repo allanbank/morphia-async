@@ -20,36 +20,37 @@ import com.google.code.morphia.query.UpdateOpsImpl;
  */
 @SuppressWarnings("rawtypes")
 public class Helper {
-    public static Document getCriteria(Query q) {
-        QueryImpl qi = (QueryImpl) q;
-        return qi.getQueryObject();
-    }
-
-    public static Document getSort(Query q) {
-        QueryImpl qi = (QueryImpl) q;
-        return qi.getSortObject();
-    }
-
-    public static Document getFields(Query q) {
-        QueryImpl qi = (QueryImpl) q;
-        return qi.getFieldsObject();
-    }
-
-    public static MongoCollection getCollection(Query q) {
-        QueryImpl qi = (QueryImpl) q;
+    public static MongoCollection getCollection(final Query q) {
+        final QueryImpl qi = (QueryImpl) q;
         return qi.getCollection();
     }
 
-    public static ClosableIterator<Document> getCursor(Iterable it) {
+    public static Document getCriteria(final Query q) {
+        final QueryImpl qi = (QueryImpl) q;
+        return qi.getQueryObject();
+    }
+
+    public static ClosableIterator<Document> getCursor(final Iterable it) {
         return ((MorphiaIterator) it).getCursor();
     }
 
-    public static Map<String, Map<String, Object>> getUpdateOperations(UpdateOperations ops) {
-        UpdateOpsImpl uo = (UpdateOpsImpl) ops;
-        return uo.getOps();
+    public static MongoDatabase getDB(final Datastore ds) {
+        return ds.getDatabase();
     }
 
-    public static MongoDatabase getDB(Datastore ds) {
-        return ds.getDB();
+    public static Document getFields(final Query q) {
+        final QueryImpl qi = (QueryImpl) q;
+        return qi.getFieldsObject();
+    }
+
+    public static Document getSort(final Query q) {
+        final QueryImpl qi = (QueryImpl) q;
+        return qi.getSortObject();
+    }
+
+    public static Map<String, Map<String, Object>> getUpdateOperations(
+            final UpdateOperations ops) {
+        final UpdateOpsImpl uo = (UpdateOpsImpl) ops;
+        return uo.getOps();
     }
 }

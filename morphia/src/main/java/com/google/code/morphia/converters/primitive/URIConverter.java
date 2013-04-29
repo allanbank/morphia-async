@@ -48,22 +48,8 @@ public class URIConverter extends AbstractBasicFieldConverter<URI> {
      * @param clazz
      *            The sub type of URI being converted.
      */
-    protected URIConverter(Class clazz) {
+    protected URIConverter(final Class clazz) {
         super(clazz);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, URI object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, object.toString().replace(".", "%46"));
     }
 
     /**
@@ -73,18 +59,33 @@ public class URIConverter extends AbstractBasicFieldConverter<URI> {
      * </p>
      */
     @Override
-    public URI fromElement(Class<?> mappingType, Element element) {
+    public URI fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
 
             return URI.create(sVal.replace("%46", "."));
         }
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a UUID.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final URI object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, object.toString().replace(".", "%46"));
     }
 }

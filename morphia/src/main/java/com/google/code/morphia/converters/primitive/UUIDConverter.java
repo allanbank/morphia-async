@@ -48,25 +48,11 @@ public class UUIDConverter extends AbstractBasicFieldConverter<UUID> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link UuidElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, UUID object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new UuidElement(name, object);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Short}.
      * </p>
      */
     @Override
-    public UUID fromElement(Class<?> mappingType, Element element) {
+    public UUID fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -89,6 +75,21 @@ public class UUIDConverter extends AbstractBasicFieldConverter<UUID> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a UUID.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link UuidElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final UUID object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new UuidElement(name, object);
     }
 
 }

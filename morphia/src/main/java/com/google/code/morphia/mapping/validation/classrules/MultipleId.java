@@ -17,10 +17,11 @@ import com.google.code.morphia.state.MappedField;
  */
 public class MultipleId implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
 
         MappedField idField = null;
-        for (MappedField f : mc.getFields()) {
+        for (final MappedField f : mc.getFields()) {
             if (f.hasAnnotation(Id.class)) {
                 if (idField == null) {
                     idField = f;

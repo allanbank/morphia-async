@@ -23,7 +23,7 @@ public class TestMapping extends TestBase {
 
         //Old way
         Document wrapObj = morphia.toDocument(sp);  //the error points here from the user
-        ds.getDB().getCollection("testColl").save(wrapObj);
+        ds.getDatabase().getCollection("testColl").save(wrapObj);
         
         
         //better way

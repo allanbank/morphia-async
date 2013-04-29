@@ -53,14 +53,14 @@ public class IterableConverter implements FieldConverter<Object> {
      */
     public static final Class<HashSet> HASH_SET_CLASS = HashSet.class;
 
-    /** The class for the {@link Set} interface. */
-    public static final Class<Set> SET_CLASS = Set.class;
-
     /** The class for the {@link Iterable} interface. */
     public static final Class<Iterable> ITERABLE_CLASS = Iterable.class;
 
     /** The base object class. */
     public static final Class<Object> OBJECT_CLASS = Object.class;
+
+    /** The class for the {@link Set} interface. */
+    public static final Class<Set> SET_CLASS = Set.class;
 
     /** The converters for sub-fields. */
     private final CachingFieldConverter fieldConverter;
@@ -71,24 +71,8 @@ public class IterableConverter implements FieldConverter<Object> {
      * @param fieldConverter
      *            The converters for sub-fields.
      */
-    public IterableConverter(CachingFieldConverter fieldConverter) {
+    public IterableConverter(final CachingFieldConverter fieldConverter) {
         this.fieldConverter = fieldConverter;
-    }
-
-    /**
-     * Create the appropriate type of collections to be used.
-     * 
-     * @param field
-     *            The field information.
-     * @return The created collection.
-     */
-    private Collection<?> createNewCollection(final MappedField field) {
-        Class<?> type = field.getResolvedClass();
-
-        if (SET_CLASS.isAssignableFrom(type)) {
-            return newInstance(type, HASH_SET_CLASS);
-        }
-        return newInstance(type, ARRAY_LIST_CLASS);
     }
 
     /**
@@ -99,11 +83,43 @@ public class IterableConverter implements FieldConverter<Object> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field) {
-        Class<?> type = field.getResolvedClass();
+    public boolean canConvert(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field) {
+        final Class<?> type = field.getResolvedClass();
 
         return ITERABLE_CLASS.isAssignableFrom(type);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert an {@link ArrayElement} to an {@link Iterable}
+     * again.
+     * </p>
+     */
+    @Override
+    public Object fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
+        if ((element == null) || (element.getType() == ElementType.NULL)) {
+            return null;
+        }
+
+        final Class subtype = field.getTypeArgumentClass(0);
+        final MappedField subField = new MappedField();
+        subField.mapFor("0", subtype);
+
+        final Collection vals = createNewCollection(field);
+        if (element.getType() == ElementType.ARRAY) {
+            for (final Element o : ((ArrayElement) element).getEntries()) {
+                vals.add(fieldConverter.fromElement(clazz, subField, o));
+            }
+        }
+        else {
+            // Single value case
+            vals.add(fieldConverter.fromElement(clazz, subField, element));
+        }
+
+        return vals;
     }
 
     /**
@@ -113,20 +129,20 @@ public class IterableConverter implements FieldConverter<Object> {
      * </p>
      */
     @Override
-    public Element toElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, String name,
-            Object value) {
+    public Element toElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final String name, final Object value) {
         if (value == null) {
             return new NullElement(name);
         }
 
-        Iterable<?> iterableValues = toIterable(value);
-        List<Element> elements = new ArrayList<Element>();
+        final Iterable<?> iterableValues = toIterable(value);
+        final List<Element> elements = new ArrayList<Element>();
         int i = 0;
-        MappedField subField = new MappedField();
-        for (Object o : iterableValues) {
+        final MappedField subField = new MappedField();
+        for (final Object o : iterableValues) {
 
-            String itemName = String.valueOf(i++);
+            final String itemName = String.valueOf(i++);
             subField.mapFor(itemName,
                     (o != null) ? o.getClass() : field.getTypeArgumentClass(0));
 
@@ -143,40 +159,24 @@ public class IterableConverter implements FieldConverter<Object> {
      *            The value to convert.
      * @return The value as an {@link Iterable}.
      */
-    protected Iterable<?> toIterable(Object value) {
+    protected Iterable<?> toIterable(final Object value) {
         return (Iterable<?>) value;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert an {@link ArrayElement} to an {@link Iterable}
-     * again.
-     * </p>
+     * Create the appropriate type of collections to be used.
+     * 
+     * @param field
+     *            The field information.
+     * @return The created collection.
      */
-    @Override
-    public Object fromElement(MappedClass clazz, MappedField field,
-            Element element) {
-        if ((element == null) || (element.getType() == ElementType.NULL)) {
-            return null;
-        }
+    private Collection<?> createNewCollection(final MappedField field) {
+        final Class<?> type = field.getResolvedClass();
 
-        Class subtype = field.getTypeArgumentClass(0);
-        MappedField subField = new MappedField();
-        subField.mapFor("0", subtype);
-
-        Collection vals = createNewCollection(field);
-        if (element.getType() == ElementType.ARRAY) {
-            for (Element o : ((ArrayElement) element).getEntries()) {
-                vals.add(fieldConverter.fromElement(clazz, subField, o));
-            }
+        if (SET_CLASS.isAssignableFrom(type)) {
+            return newInstance(type, HASH_SET_CLASS);
         }
-        else {
-            // Single value case
-            vals.add(fieldConverter.fromElement(clazz, subField, element));
-        }
-
-        return vals;
+        return newInstance(type, ARRAY_LIST_CLASS);
     }
 
     /**
@@ -189,21 +189,21 @@ public class IterableConverter implements FieldConverter<Object> {
      *            The fallback type to create.
      * @return The object created.
      */
-    private Collection<?> newInstance(Class<?> type,
+    private Collection<?> newInstance(final Class<?> type,
             final Class<? extends Collection> fallbackType) {
         try {
             return (Collection<?>) type.newInstance();
         }
-        catch (Exception error) {
+        catch (final Exception error) {
             try {
                 return fallbackType.newInstance();
             }
-            catch (InstantiationException e) {
+            catch (final InstantiationException e) {
                 throw new MappingException(
                         "Could not create a object of type '"
                                 + fallbackType.getSimpleName() + "'.", e);
             }
-            catch (IllegalAccessException e) {
+            catch (final IllegalAccessException e) {
                 throw new MappingException(
                         "Could not create a object of type '"
                                 + fallbackType.getSimpleName() + "'.", e);

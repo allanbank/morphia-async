@@ -44,34 +44,20 @@ public class FloatConverter extends AbstractBasicFieldConverter<Float> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link DoubleElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Float object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new DoubleElement(name, object.doubleValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Double}.
      * </p>
      */
     @Override
-    public Float fromElement(Class<?> mappingType, Element element) {
+    public Float fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.DOUBLE) {
-            double value = ((DoubleElement) element).getDoubleValue();
+            final double value = ((DoubleElement) element).getDoubleValue();
             return Float.valueOf((float) value);
         }
         else if (element instanceof NumericElement) {
-            double value = ((NumericElement) element).getDoubleValue();
+            final double value = ((NumericElement) element).getDoubleValue();
             return Float.valueOf((float) value);
         }
         else if ((element.getType() == ElementType.STRING)
@@ -79,7 +65,7 @@ public class FloatConverter extends AbstractBasicFieldConverter<Float> {
             try {
                 return Float.valueOf(element.getValueAsString());
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
                 throw new MappingException("Invalid double string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -87,5 +73,20 @@ public class FloatConverter extends AbstractBasicFieldConverter<Float> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Double.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link DoubleElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Float object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new DoubleElement(name, object.doubleValue());
     }
 }

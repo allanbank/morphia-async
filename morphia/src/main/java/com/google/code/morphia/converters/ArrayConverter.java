@@ -40,7 +40,7 @@ public class ArrayConverter extends IterableConverter {
      * @param fieldConverter
      *            The converters for sub-fields.
      */
-    public ArrayConverter(CachingFieldConverter fieldConverter) {
+    public ArrayConverter(final CachingFieldConverter fieldConverter) {
         super(fieldConverter);
     }
 
@@ -52,10 +52,35 @@ public class ArrayConverter extends IterableConverter {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
-        Class<?> type = field.getResolvedClass();
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
+        final Class<?> type = field.getResolvedClass();
 
         return type.isArray();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the list from the base class into an array.
+     * </p>
+     */
+    @Override
+    public Object fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
+
+        final Class<?> type = field.getResolvedClass().getComponentType();
+
+        // Base class does the heavy lifting.
+        final List<Object> values = (List<Object>) super.fromElement(clazz,
+                field, element);
+        final Object exampleArray = Array.newInstance(type, values.size());
+        try {
+            return values.toArray((Object[]) exampleArray);
+        }
+        catch (final ClassCastException e) {
+            // Use a vanilla array.
+            return values.toArray();
+        }
     }
 
     /**
@@ -66,32 +91,7 @@ public class ArrayConverter extends IterableConverter {
      * @return The value as an {@link Iterable}.
      */
     @Override
-    protected Iterable<?> toIterable(Object value) {
+    protected Iterable<?> toIterable(final Object value) {
         return Arrays.asList((Object[]) value);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the list from the base class into an array.
-     * </p>
-     */
-    @Override
-    public Object fromElement(MappedClass clazz, MappedField field,
-            Element element) {
-
-        Class<?> type = field.getResolvedClass().getComponentType();
-
-        // Base class does the heavy lifting.
-        List<Object> values = (List<Object>) super.fromElement(clazz, field,
-                element);
-        Object exampleArray = Array.newInstance(type, values.size());
-        try {
-            return values.toArray((Object[]) exampleArray);
-        }
-        catch (ClassCastException e) {
-            // Use a vanilla array.
-            return values.toArray();
-        }
     }
 }

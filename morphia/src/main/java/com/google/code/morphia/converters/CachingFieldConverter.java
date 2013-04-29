@@ -48,7 +48,7 @@ public class CachingFieldConverter implements FieldConverter<Object> {
      * @param converter
      *            The converter for nexted documents/object.
      */
-    public CachingFieldConverter(Converter converter) {
+    public CachingFieldConverter(final Converter converter) {
         converters = new ArrayList<FieldConverter>();
         resolved = new ConcurrentHashMap<Class<?>, FieldConverter>();
         serializeConverter = new SerializedObjectConverter();
@@ -72,34 +72,27 @@ public class CachingFieldConverter implements FieldConverter<Object> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the value using the most suitable converter.
-     * </p>
-     */
     @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            Object value) {
+    public Object fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
         if (serializeConverter.canConvert(clazz, field)) {
-            return serializeConverter.toElement(clazz, field, name,
-                    (Serializable) value);
+            return serializeConverter.fromElement(clazz, field, element);
         }
 
-        Class<?> type = field.getResolvedClass();
-        FieldConverter converter = resolved.get(type);
+        final Class<?> type = field.getResolvedClass();
+        final FieldConverter converter = resolved.get(type);
         if ((converter != null) && converter.canConvert(clazz, field)) {
-            return converter.toElement(clazz, field, name, value);
+            return converter.fromElement(clazz, field, element);
         }
 
-        for (FieldConverter c : converters) {
+        for (final FieldConverter c : converters) {
             if (c.canConvert(clazz, field)) {
                 resolved.put(type, c);
-                return c.toElement(clazz, field, name, value);
+                return c.fromElement(clazz, field, element);
             }
         }
 
@@ -109,23 +102,30 @@ public class CachingFieldConverter implements FieldConverter<Object> {
                 + type.getSimpleName() + "'.");
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the value using the most suitable converter.
+     * </p>
+     */
     @Override
-    public Object fromElement(MappedClass clazz, MappedField field,
-            Element element) {
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final Object value) {
         if (serializeConverter.canConvert(clazz, field)) {
-            return serializeConverter.fromElement(clazz, field, element);
+            return serializeConverter.toElement(clazz, field, name,
+                    (Serializable) value);
         }
 
-        Class<?> type = field.getResolvedClass();
-        FieldConverter converter = resolved.get(type);
+        final Class<?> type = field.getResolvedClass();
+        final FieldConverter converter = resolved.get(type);
         if ((converter != null) && converter.canConvert(clazz, field)) {
-            return converter.fromElement(clazz, field, element);
+            return converter.toElement(clazz, field, name, value);
         }
 
-        for (FieldConverter c : converters) {
+        for (final FieldConverter c : converters) {
             if (c.canConvert(clazz, field)) {
                 resolved.put(type, c);
-                return c.fromElement(clazz, field, element);
+                return c.toElement(clazz, field, name, value);
             }
         }
 

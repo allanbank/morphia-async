@@ -17,9 +17,10 @@ import com.google.code.morphia.state.MappedClass;
  */
 public class EmbeddedAndId implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
-        Class<?> clazz = mc.getMappedClass();
-        Embedded embedded = clazz.getAnnotation(Embedded.class);
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
+        final Class<?> clazz = mc.getMappedClass();
+        final Embedded embedded = clazz.getAnnotation(Embedded.class);
         if ((embedded != null) && (mc.getIdField() != null)) {
             ve.add(new ConstraintViolation(Level.FATAL, mc, this.getClass(),
                     "@" + Embedded.class.getSimpleName()

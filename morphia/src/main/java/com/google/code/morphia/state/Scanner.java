@@ -35,8 +35,8 @@ import com.allanbank.mongodb.Durability;
 import com.allanbank.mongodb.ReadPreference;
 import com.allanbank.mongodb.bson.builder.BuilderFactory;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
-import com.google.code.morphia.AbstractEntityInterceptor;
 import com.google.code.morphia.EntityInterceptor;
+import com.google.code.morphia.EntityInterceptorAdapter;
 import com.google.code.morphia.annotations.AlsoLoad;
 import com.google.code.morphia.annotations.ConstructorArgs;
 import com.google.code.morphia.annotations.Converters;
@@ -629,7 +629,7 @@ public class Scanner {
      * @copyright 2013, Allanbank Consulting, Inc., All Rights Reserved
      */
     static class AbstractEntityInterceptorCallback extends
-            AbstractEntityInterceptor {
+            EntityInterceptorAdapter {
         /** The class for the {@link DocumentBuilder} interface. */
         public static final Class<DocumentBuilder> DOCUMENT_BUILDER_CLASS = DocumentBuilder.class;
 

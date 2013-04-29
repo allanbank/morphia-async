@@ -42,36 +42,37 @@ public class CharArrayConverter extends AbstractBasicFieldConverter<char[]> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, char[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, String.valueOf(object));
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@code char[]}.
      * </p>
      */
     @Override
-    public char[] fromElement(Class<?> mappingType, Element element) {
+    public char[] fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
 
             return sVal.toCharArray();
         }
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a char[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final char[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, String.valueOf(object));
     }
 }

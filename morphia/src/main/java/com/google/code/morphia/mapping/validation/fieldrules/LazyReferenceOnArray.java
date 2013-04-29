@@ -18,12 +18,12 @@ import com.google.code.morphia.state.MappedField;
 public class LazyReferenceOnArray extends FieldConstraint {
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
-        Reference ref = mf.getField().getAnnotation(Reference.class);
-        if (ref != null && ref.lazy()) {
-            Class<?> type = mf.getResolvedClass();
-            if (type.isArray())
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
+        final Reference ref = mf.getField().getAnnotation(Reference.class);
+        if ((ref != null) && ref.lazy()) {
+            final Class<?> type = mf.getResolvedClass();
+            if (type.isArray()) {
                 ve.add(new ConstraintViolation(
                         Level.FATAL,
                         mc,
@@ -31,6 +31,7 @@ public class LazyReferenceOnArray extends FieldConstraint {
                         this.getClass(),
                         "The lazy attribute cannot be used for an Array. If you "
                                 + "need a lazy array please use ArrayList instead."));
+            }
         }
     }
 

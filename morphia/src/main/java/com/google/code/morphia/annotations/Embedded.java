@@ -41,6 +41,9 @@ public @interface Embedded {
     /** The ignored field name. */
     public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
 
+    /** Specify the concrete class to instantiate. */
+    Class<?> concreteClass() default Object.class;
+
     /**
      * The name of the Mongo value to store the field. Defaults to the name of
      * the field being annotated.
@@ -49,7 +52,4 @@ public @interface Embedded {
      *         fields only, not applicable for Type level)
      */
     String value() default IGNORED_FIELDNAME;
-
-    /** Specify the concrete class to instantiate. */
-    Class<?> concreteClass() default Object.class;
 }

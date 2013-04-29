@@ -28,8 +28,8 @@ import com.google.code.morphia.mapping.MappingException;
  * 
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author Scott Hernandez
- * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting, Inc.,
- *            All Rights Reserved
+ * @copyright 2010-2013, Uwe Schaefer, Scott Hernandez and Allanbank Consulting,
+ *            Inc., All Rights Reserved
  */
 public class ByteConverter extends AbstractBasicFieldConverter<Byte> {
     /**
@@ -42,25 +42,11 @@ public class ByteConverter extends AbstractBasicFieldConverter<Byte> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link IntegerElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Byte object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new IntegerElement(name, object.intValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a Byte.
      * </p>
      */
     @Override
-    public Byte fromElement(Class<?> mappingType, Element element) {
+    public Byte fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -71,11 +57,26 @@ public class ByteConverter extends AbstractBasicFieldConverter<Byte> {
         // Handle string for cases of the value actually being the key.
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
             return Byte.valueOf(Byte.parseByte(sVal));
         }
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a byte.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link IntegerElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Byte object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new IntegerElement(name, object.intValue());
     }
 }

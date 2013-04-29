@@ -22,11 +22,11 @@ public class MapKeyDifferentFromString extends FieldConstraint {
     final private static String supportedExample = "(Map<String/Enum/Long/ObjectId/..., ?>)";
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
         if (Map.class.isAssignableFrom(mf.getResolvedClass())
                 && (!mf.hasAnnotation(Serialized.class))) {
-            Class<?> parameterizedClass = ReflectionUtils
+            final Class<?> parameterizedClass = ReflectionUtils
                     .getParameterizedClass(mf.getField(), 0);
             if (parameterizedClass == null) {
                 ve.add(new ConstraintViolation(Level.WARNING, mc, mf, this
@@ -37,11 +37,12 @@ public class MapKeyDifferentFromString extends FieldConstraint {
             }
             else if (!parameterizedClass.equals(String.class)
                     && !parameterizedClass.equals(ObjectId.class)
-                    && !ReflectionUtils.isPrimitiveLike(parameterizedClass))
+                    && !ReflectionUtils.isPrimitiveLike(parameterizedClass)) {
                 ve.add(new ConstraintViolation(Level.FATAL, mc, mf, this
                         .getClass(), "Maps must be keyed by a simple type "
                         + supportedExample + "; " + parameterizedClass
                         + " is not supported as a map key type."));
+            }
         }
     }
 }

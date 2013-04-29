@@ -202,6 +202,17 @@ public class MappedClass {
     }
 
     /**
+     * Finds the {@link MappedField} by the name of the field.
+     * 
+     * @param name
+     *            The name of the field.
+     * @return The mapped field for the name, if any.
+     */
+    public MappedField findField(final String name) {
+        return fieldsByNames.get(name);
+    }
+
+    /**
      * Returns the additionalFieldConverters value.
      * 
      * @return The additionalFieldConverters value.
@@ -244,17 +255,6 @@ public class MappedClass {
      */
     public Collection<MappedField> getFields() {
         return Collections.unmodifiableList(fields);
-    }
-
-    /**
-     * Finds the {@link MappedField} by the name of the field.
-     * 
-     * @param name
-     *            The name of the field.
-     * @return The mapped field for the name, if any.
-     */
-    public MappedField findField(String name) {
-        return fieldsByNames.get(name);
     }
 
     /**
@@ -327,7 +327,8 @@ public class MappedClass {
      *            The class for the annotation.
      * @return True if the class contains the annotation.
      */
-    public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+    public boolean hasAnnotation(
+            final Class<? extends Annotation> annotationClass) {
         return (clazz.getAnnotation(annotationClass) != null);
     }
 
@@ -425,14 +426,14 @@ public class MappedClass {
             this.fields.addAll(fields);
 
             // Two scans.
-            for (MappedField field : fields) {
+            for (final MappedField field : fields) {
                 // First also names.
-                for (String name : field.getAlsoLoadNames()) {
+                for (final String name : field.getAlsoLoadNames()) {
                     fieldsByNames.put(name, field);
                 }
             }
 
-            for (MappedField field : fields) {
+            for (final MappedField field : fields) {
                 // Now the canonical name.
                 fieldsByNames.put(field.getMappedFieldName(), field);
             }

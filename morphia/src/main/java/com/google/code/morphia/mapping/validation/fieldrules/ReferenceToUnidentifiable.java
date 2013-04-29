@@ -20,16 +20,17 @@ import com.google.code.morphia.state.MappedField;
 public class ReferenceToUnidentifiable extends FieldConstraint {
 
     @Override
-    protected void check(MappedClass mc, MappedField mf,
-            Set<ConstraintViolation> ve) {
+    protected void check(final MappedClass mc, final MappedField mf,
+            final Set<ConstraintViolation> ve) {
         if (mf.hasAnnotation(Reference.class)) {
-            Class<?> realType = mf.getResolvedClass();
+            final Class<?> realType = mf.getResolvedClass();
 
-            if (realType == null)
+            if (realType == null) {
                 throw new MappingException(
                         "Type is null for this MappedField: " + mf);
+            }
 
-            if ((!realType.isInterface() && mc.getIdField() == null))
+            if ((!realType.isInterface() && (mc.getIdField() == null))) {
                 ve.add(new ConstraintViolation(Level.FATAL, mc, mf, this
                         .getClass(), mf.getField().getName()
                         + " is annotated as a @"
@@ -37,6 +38,7 @@ public class ReferenceToUnidentifiable extends FieldConstraint {
                         + mc.getMappedClass().getName()
                         + " class is missing the @" + Id.class.getSimpleName()
                         + " annotation"));
+            }
         }
     }
 

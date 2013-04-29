@@ -9,18 +9,19 @@ import com.google.code.morphia.Datastore;
  * @author uwe schaefer
  */
 public class DefaultDatastoreProvider implements DatastoreProvider {
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public Datastore get() {
-		final Datastore datastore = DatastoreHolder.getInstance().get();
-		if (datastore == null) {
-			throw new IllegalStateException(
-					"DatastoreHolder does not carry a Datastore.");
-		}
-		return datastore;
-	}
+    @Override
+    public Datastore get() {
+        final Datastore datastore = DatastoreHolder.getInstance().get();
+        if (datastore == null) {
+            throw new IllegalStateException(
+                    "DatastoreHolder does not carry a Datastore.");
+        }
+        return datastore;
+    }
 
 }

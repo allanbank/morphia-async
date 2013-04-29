@@ -39,11 +39,11 @@ import com.google.code.morphia.mapping.MappingException;
  */
 public class DateConverter extends AbstractBasicFieldConverter<Date> {
 
-    /** The default timezone when forced to parse a time. */
-    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-
     /** The standard format expected for a date string. */
     public static final String FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+    /** The default timezone when forced to parse a time. */
+    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     /**
      * Creates a new DateConverter.
@@ -58,22 +58,8 @@ public class DateConverter extends AbstractBasicFieldConverter<Date> {
      * @param clazz
      *            The sub type of Date.
      */
-    protected DateConverter(Class<? extends Date> clazz) {
+    protected DateConverter(final Class<? extends Date> clazz) {
         super(clazz);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the {@code object} into a {@link TimestampElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Date object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new TimestampElement(name, object.getTime());
     }
 
     /**
@@ -83,29 +69,29 @@ public class DateConverter extends AbstractBasicFieldConverter<Date> {
      * </p>
      */
     @Override
-    public Date fromElement(Class<?> mappingType, Element element) {
+    public Date fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.UTC_TIMESTAMP) {
-            long ts = ((TimestampElement) element).getTime();
+            final long ts = ((TimestampElement) element).getTime();
             return new Date(ts);
         }
         else if (element instanceof NumericElement) {
-            long ts = ((NumericElement) element).getLongValue();
+            final long ts = ((NumericElement) element).getLongValue();
             return new Date(ts);
         }
         else if ((element.getType() == ElementType.STRING)
                 || (element.getType() == ElementType.SYMBOL)) {
-            String sVal = element.getValueAsString();
+            final String sVal = element.getValueAsString();
 
-            SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
+            final SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
             sdf.setTimeZone(UTC);
 
             try {
                 return sdf.parse(sVal);
             }
-            catch (ParseException e) {
+            catch (final ParseException e) {
                 throw new MappingException("Invalid date string name '" + sVal
                         + "'.", e);
             }
@@ -113,5 +99,20 @@ public class DateConverter extends AbstractBasicFieldConverter<Date> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Date.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link TimestampElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Date object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new TimestampElement(name, object.getTime());
     }
 }

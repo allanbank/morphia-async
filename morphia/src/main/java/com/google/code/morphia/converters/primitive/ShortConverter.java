@@ -43,34 +43,20 @@ public class ShortConverter extends AbstractBasicFieldConverter<Short> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link IntegerElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Short object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new IntegerElement(name, object.intValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Short}.
      * </p>
      */
     @Override
-    public Short fromElement(Class<?> mappingType, Element element) {
+    public Short fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.INTEGER) {
-            int value = ((IntegerElement) element).getIntValue();
+            final int value = ((IntegerElement) element).getIntValue();
             return Short.valueOf((short) value);
         }
         else if (element instanceof NumericElement) {
-            int value = ((NumericElement) element).getIntValue();
+            final int value = ((NumericElement) element).getIntValue();
             return Short.valueOf((short) value);
         }
         else if ((element.getType() == ElementType.STRING)
@@ -78,7 +64,7 @@ public class ShortConverter extends AbstractBasicFieldConverter<Short> {
             try {
                 return Short.valueOf(element.getValueAsString());
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
                 throw new MappingException("Invalid short string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -86,5 +72,20 @@ public class ShortConverter extends AbstractBasicFieldConverter<Short> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Short.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link IntegerElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Short object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new IntegerElement(name, object.intValue());
     }
 }

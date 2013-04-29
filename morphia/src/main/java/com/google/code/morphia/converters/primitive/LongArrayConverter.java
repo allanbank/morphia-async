@@ -41,42 +41,24 @@ public class LongArrayConverter extends AbstractBasicFieldConverter<long[]> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link ArrayElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, long[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-
-        LongElement[] elements = new LongElement[object.length];
-        for (int i = 0; i < object.length; ++i) {
-            elements[i] = new LongElement(String.valueOf(i), object[i]);
-        }
-        return new ArrayElement(name, elements);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code ellement} into a {@link Long} value.
      * </p>
      */
     @Override
-    public long[] fromElement(Class<?> mappingType, Element element) {
+    public long[] fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.ARRAY) {
-            LongConverter converter = new LongConverter();
+            final LongConverter converter = new LongConverter();
 
-            ArrayElement array = (ArrayElement) element;
-            List<Element> entries = array.getEntries();
+            final ArrayElement array = (ArrayElement) element;
+            final List<Element> entries = array.getEntries();
 
-            long[] result = new long[entries.size()];
+            final long[] result = new long[entries.size()];
             for (int i = 0; i < result.length; ++i) {
-                Long value = converter.fromElement(mappingType, entries.get(i));
+                final Long value = converter.fromElement(mappingType,
+                        entries.get(i));
                 if (value != null) {
                     result[i] = value.longValue();
                 }
@@ -90,5 +72,25 @@ public class LongArrayConverter extends AbstractBasicFieldConverter<long[]> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a long[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link ArrayElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final long[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+
+        final LongElement[] elements = new LongElement[object.length];
+        for (int i = 0; i < object.length; ++i) {
+            elements[i] = new LongElement(String.valueOf(i), object[i]);
+        }
+        return new ArrayElement(name, elements);
     }
 }

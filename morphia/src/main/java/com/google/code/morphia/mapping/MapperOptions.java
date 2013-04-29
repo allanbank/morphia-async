@@ -1,6 +1,5 @@
 package com.google.code.morphia.mapping;
 
-
 /**
  * Options to control mapping behavior.
  * 
@@ -16,10 +15,10 @@ public class MapperOptions {
     public boolean actLikeSerializer = false;
     /**
      * <p>
-     * Controls if null are stored.
+     * Controls if final fields are stored.
      * </p>
      */
-    public boolean storeNulls = false;
+    public boolean ignoreFinals = false; // ignore final fields.
     /**
      * <p>
      * Controls if empty collection/arrays are stored.
@@ -28,8 +27,8 @@ public class MapperOptions {
     public boolean storeEmpties = false;
     /**
      * <p>
-     * Controls if final fields are stored.
+     * Controls if null are stored.
      * </p>
      */
-    public boolean ignoreFinals = false; // ignore final fields.
+    public boolean storeNulls = false;
 }

@@ -47,22 +47,8 @@ public class EnumConverter implements BasicFieldConverter<Enum<?>> {
      * </p>
      */
     @Override
-    public boolean canConvert(Class<?> mappingType) {
+    public boolean canConvert(final Class<?> mappingType) {
         return mappingType.isEnum();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Enum<?> object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, object.name());
     }
 
     /**
@@ -73,7 +59,7 @@ public class EnumConverter implements BasicFieldConverter<Enum<?>> {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Enum<?> fromElement(Class mappingType, Element element) {
+    public Enum<?> fromElement(final Class mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -82,7 +68,7 @@ public class EnumConverter implements BasicFieldConverter<Enum<?>> {
             try {
                 return Enum.valueOf(mappingType, element.getValueAsString());
             }
-            catch (IllegalArgumentException e) {
+            catch (final IllegalArgumentException e) {
                 throw new MappingException("Invalid double string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -90,5 +76,20 @@ public class EnumConverter implements BasicFieldConverter<Enum<?>> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Enum.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Enum<?> object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, object.name());
     }
 }

@@ -299,6 +299,18 @@ public class MappedField {
     }
 
     /**
+     * Returns true if the field contains the specified annotation.
+     * 
+     * @param annotationClass
+     *            The class for the annotation.
+     * @return True if the field contains the annotation.
+     */
+    public boolean hasAnnotation(
+            final Class<? extends Annotation> annotationClass) {
+        return (field.getAnnotation(annotationClass) != null);
+    }
+
+    /**
      * Returns the id value.
      * 
      * @return The id value.
@@ -527,16 +539,5 @@ public class MappedField {
 
         /** Serialize the field into a BSON binary element without compression. */
         SERIALIZED_UNCOMPRESSED;
-    }
-
-    /**
-     * Returns true if the field contains the specified annotation.
-     * 
-     * @param annotationClass
-     *            The class for the annotation.
-     * @return True if the field contains the annotation.
-     */
-    public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
-        return (field.getAnnotation(annotationClass) != null);
     }
 }

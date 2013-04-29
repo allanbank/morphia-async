@@ -7,8 +7,8 @@ package com.google.code.morphia.converters;
 
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.element.NullElement;
-import com.google.code.morphia.state.MappedField;
 import com.google.code.morphia.state.MappedClass;
+import com.google.code.morphia.state.MappedField;
 
 /**
  * FieldConverterAdapter provides a stub implementation of the
@@ -37,20 +37,8 @@ public class FieldConverterAdapter<T> implements FieldConverter<T> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overriden to return a {@link NullElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            T value) {
-        return new NullElement(name);
     }
 
     /**
@@ -60,8 +48,21 @@ public class FieldConverterAdapter<T> implements FieldConverter<T> {
      * </p>
      */
     @Override
-    public T fromElement(MappedClass clazz, MappedField field, Element element) {
+    public T fromElement(final MappedClass clazz, final MappedField field,
+            final Element element) {
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overriden to return a {@link NullElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final T value) {
+        return new NullElement(name);
     }
 
 }

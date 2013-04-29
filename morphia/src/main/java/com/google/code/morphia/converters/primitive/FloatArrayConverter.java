@@ -41,43 +41,24 @@ public class FloatArrayConverter extends AbstractBasicFieldConverter<float[]> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link ArrayElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, float[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-
-        DoubleElement[] elements = new DoubleElement[object.length];
-        for (int i = 0; i < object.length; ++i) {
-            elements[i] = new DoubleElement(String.valueOf(i), object[i]);
-        }
-        return new ArrayElement(name, elements);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code ellement} into a {@link Float} value.
      * </p>
      */
     @Override
-    public float[] fromElement(Class<?> mappingType, Element element) {
+    public float[] fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.ARRAY) {
-            FloatConverter converter = new FloatConverter();
+            final FloatConverter converter = new FloatConverter();
 
-            ArrayElement array = (ArrayElement) element;
-            List<Element> entries = array.getEntries();
+            final ArrayElement array = (ArrayElement) element;
+            final List<Element> entries = array.getEntries();
 
-            float[] result = new float[entries.size()];
+            final float[] result = new float[entries.size()];
             for (int i = 0; i < result.length; ++i) {
-                Float value = converter
-                        .fromElement(mappingType, entries.get(i));
+                final Float value = converter.fromElement(mappingType,
+                        entries.get(i));
                 if (value != null) {
                     result[i] = value.floatValue();
                 }
@@ -91,5 +72,25 @@ public class FloatArrayConverter extends AbstractBasicFieldConverter<float[]> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a float[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link ArrayElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final float[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+
+        final DoubleElement[] elements = new DoubleElement[object.length];
+        for (int i = 0; i < object.length; ++i) {
+            elements[i] = new DoubleElement(String.valueOf(i), object[i]);
+        }
+        return new ArrayElement(name, elements);
     }
 }

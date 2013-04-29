@@ -232,7 +232,7 @@ public class TestAsListPerf extends TestBase {
 	
 	public static double driverQueryAndMorphiaConv(final int nbOfHits, final Datastore ds, final Morphia morphia) {
 		long start = System.nanoTime();
-		List<DBObject> list = ds.getDB().getCollection("Address").
+		List<DBObject> list = ds.getDatabase().getCollection("Address").
 									find().
 									sort(new BasicDBObject("name", 1)).
 									toArray();

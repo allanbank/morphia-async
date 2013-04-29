@@ -50,36 +50,12 @@ public class SerializedObjectConverter implements FieldConverter<Serializable> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz, MappedField field) {
-        boolean serializeStrategy = (field.getStrategy() == Strategy.SERIALIZED_UNCOMPRESSED)
+    public boolean canConvert(final MappedClass clazz, final MappedField field) {
+        final boolean serializeStrategy = (field.getStrategy() == Strategy.SERIALIZED_UNCOMPRESSED)
                 || (field.getStrategy() == Strategy.SERIALIZED_COMPRESSED);
 
         return serializeStrategy
                 && SERIALIZABLE_IF.isAssignableFrom(field.getResolvedClass());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to convert the value to a {@link BinaryElement} containing the
-     * serialized value.
-     * </p>
-     */
-    @Override
-    public Element toElement(MappedClass clazz, MappedField field, String name,
-            Serializable value) {
-        if (value == null) {
-            return new NullElement(name);
-        }
-
-        boolean useCompression = (field.getStrategy() == Strategy.SERIALIZED_COMPRESSED);
-        try {
-            return new BinaryElement(name, Serializer.serialize(value,
-                    useCompression));
-        }
-        catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /**
@@ -90,22 +66,23 @@ public class SerializedObjectConverter implements FieldConverter<Serializable> {
      * </p>
      */
     @Override
-    public Serializable fromElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, Element element) {
+    public Serializable fromElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.BINARY) {
-            boolean useCompression = (field.getStrategy() == Strategy.SERIALIZED_COMPRESSED);
+            final boolean useCompression = (field.getStrategy() == Strategy.SERIALIZED_COMPRESSED);
             try {
                 return (Serializable) Serializer.deserialize(
                         ((BinaryElement) element).getValue(), useCompression);
             }
-            catch (IOException e) {
+            catch (final IOException e) {
                 throw new MappingException("While deserializing to "
                         + field.getField().getName(), e);
             }
-            catch (ClassNotFoundException e) {
+            catch (final ClassNotFoundException e) {
                 throw new MappingException("While deserializing to "
                         + field.getField().getName(), e);
             }
@@ -115,6 +92,30 @@ public class SerializedObjectConverter implements FieldConverter<Serializable> {
                 + element.getClass().getSimpleName()
                 + " into a Serialized Object of type "
                 + field.getConcreteClass().getName());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the value to a {@link BinaryElement} containing the
+     * serialized value.
+     * </p>
+     */
+    @Override
+    public Element toElement(final MappedClass clazz, final MappedField field,
+            final String name, final Serializable value) {
+        if (value == null) {
+            return new NullElement(name);
+        }
+
+        final boolean useCompression = (field.getStrategy() == Strategy.SERIALIZED_COMPRESSED);
+        try {
+            return new BinaryElement(name, Serializer.serialize(value,
+                    useCompression));
+        }
+        catch (final IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

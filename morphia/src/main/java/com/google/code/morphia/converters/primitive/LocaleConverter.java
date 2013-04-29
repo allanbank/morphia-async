@@ -37,6 +37,25 @@ import com.google.code.morphia.mapping.MappingException;
 public class LocaleConverter extends AbstractBasicFieldConverter<Locale> {
 
     /**
+     * Parse the string into a Locale.
+     * 
+     * @param localeString
+     *            The Locale string to parse.
+     * @return The parsed locale.
+     */
+    public static Locale parseLocale(final String localeString) {
+        if ((localeString != null) && (localeString.length() > 0)) {
+            final StringTokenizer st = new StringTokenizer(localeString, "_");
+            final String language = st.hasMoreElements() ? st.nextToken()
+                    : Locale.getDefault().getLanguage();
+            final String country = st.hasMoreElements() ? st.nextToken() : "";
+            final String variant = st.hasMoreElements() ? st.nextToken() : "";
+            return new Locale(language, country, variant);
+        }
+        return null;
+    }
+
+    /**
      * Creates a new LocaleConverter.
      */
     public LocaleConverter() {
@@ -46,25 +65,11 @@ public class LocaleConverter extends AbstractBasicFieldConverter<Locale> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Locale object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, object.toString());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Locale}.
      * </p>
      */
     @Override
-    public Locale fromElement(Class<?> mappingType, Element element) {
+    public Locale fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -78,21 +83,17 @@ public class LocaleConverter extends AbstractBasicFieldConverter<Locale> {
     }
 
     /**
-     * Parse the string into a Locale.
-     * 
-     * @param localeString
-     *            The Locale string to parse.
-     * @return The parsed locale.
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
      */
-    public static Locale parseLocale(final String localeString) {
-        if ((localeString != null) && (localeString.length() > 0)) {
-            StringTokenizer st = new StringTokenizer(localeString, "_");
-            String language = st.hasMoreElements() ? st.nextToken() : Locale
-                    .getDefault().getLanguage();
-            String country = st.hasMoreElements() ? st.nextToken() : "";
-            String variant = st.hasMoreElements() ? st.nextToken() : "";
-            return new Locale(language, country, variant);
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Locale object) {
+        if (object == null) {
+            return new NullElement(name);
         }
-        return null;
+        return new StringElement(name, object.toString());
     }
 }

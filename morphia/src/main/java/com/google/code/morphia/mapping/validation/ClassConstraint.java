@@ -8,5 +8,5 @@ import com.google.code.morphia.state.MappedClass;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  */
 public interface ClassConstraint {
-	void check(MappedClass mc, Set<ConstraintViolation> ve);
+    void check(MappedClass mc, Set<ConstraintViolation> ve);
 }

@@ -48,59 +48,9 @@ public class Converter {
      * @param cache
      *            The cache of class mapping information.
      */
-    public Converter(MappedClassCache cache) {
+    public Converter(final MappedClassCache cache) {
         this.cache = cache;
         this.fieldConverter = new CachingFieldConverter(this);
-    }
-
-    /**
-     * Maps the document to an object.
-     * 
-     * @param object
-     *            The object to create an object from.
-     * @return The object converted to a document.
-     */
-    public Document toDocument(Object object) {
-        MappedClass mapping = cache.getMappingFor(object.getClass());
-
-        DocumentBuilder builder = BuilderFactory.start();
-        MappedField id = mapping.getIdField();
-        if (id != null) {
-            if (id.isWritten()) {
-                builder.add(fieldConverter.toElement(mapping, id, "_id", id.get(object)));
-            }
-        }
-
-        MappedField version = mapping.getVersionField();
-        if (version != null) {
-            if (version.isWritten()) {
-                builder.add(fieldConverter.toElement(mapping, version,
-                        version.getMappedFieldName(), version.get(object)));
-            }
-        }
-
-        if (mapping.isClassnameStored()) {
-            builder.add(MappedClass.CLASS_NAME_FIELD, object.getClass()
-                    .getCanonicalName());
-        }
-
-        for (MappedField field : mapping.getFields()) {
-            if (field.isWritten() && (field != id) && (field != version)) {
-                builder.add(fieldConverter.toElement(mapping, field,
-                        field.getMappedFieldName(), field.get(object)));
-            }
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * Returns the {@link MappedClassCache}.
-     * 
-     * @return The {@link MappedClassCache}.
-     */
-    public MappedClassCache getCache() {
-        return cache;
     }
 
     /**
@@ -113,24 +63,24 @@ public class Converter {
      * @return The object filled from the document.
      */
     @SuppressWarnings("unchecked")
-    public <T> T fromDocument(Class<T> type, Document document) {
+    public <T> T fromDocument(final Class<T> type, final Document document) {
         MappedClass mapping = cache.getMappingFor(type);
 
         Object object = null;
 
-        Class<?> clazz = mapping.determineClassFor(document);
+        final Class<?> clazz = mapping.determineClassFor(document);
         mapping = cache.getMappingFor(clazz);
         try {
             // TODO - Support constructor args.
-            Constructor<?> constructor = clazz.getConstructor();
+            final Constructor<?> constructor = clazz.getConstructor();
             constructor.setAccessible(true);
             object = constructor.newInstance();
 
-            MappedField id = mapping.getIdField();
-            MappedField version = mapping.getVersionField();
+            final MappedField id = mapping.getIdField();
+            final MappedField version = mapping.getVersionField();
 
-            for (Element element : document) {
-                String name = element.getName();
+            for (final Element element : document) {
+                final String name = element.getName();
                 if ((id != null) && "_id".equals(element.getName())) {
                     if (id.getStrategy() != Strategy.NONE) {
                         id.set(object, fieldConverter.fromElement(mapping, id,
@@ -146,7 +96,7 @@ public class Converter {
                 }
                 else if (!MappedClass.CLASS_NAME_FIELD.equals(name)) {
                     // Search for the field by name.
-                    MappedField field = mapping.findField(name);
+                    final MappedField field = mapping.findField(name);
                     if ((field != null)
                             && (field.getStrategy() != Strategy.NONE)) {
                         field.set(object, fieldConverter.fromElement(mapping,
@@ -155,31 +105,82 @@ public class Converter {
                 }
             }
         }
-        catch (InstantiationException e) {
+        catch (final InstantiationException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
-        catch (IllegalAccessException e) {
+        catch (final IllegalAccessException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
-        catch (SecurityException e) {
+        catch (final SecurityException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
-        catch (NoSuchMethodException e) {
+        catch (final NoSuchMethodException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
-        catch (IllegalArgumentException e) {
+        catch (final IllegalArgumentException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
-        catch (InvocationTargetException e) {
+        catch (final InvocationTargetException e) {
             throw new MappingException("Could not create an instance of the '"
                     + clazz.getCanonicalName() + "' class.", e);
         }
 
         return (T) object;
+    }
+
+    /**
+     * Returns the {@link MappedClassCache}.
+     * 
+     * @return The {@link MappedClassCache}.
+     */
+    public MappedClassCache getCache() {
+        return cache;
+    }
+
+    /**
+     * Maps the document to an object.
+     * 
+     * @param object
+     *            The object to create an object from.
+     * @return The object converted to a document.
+     */
+    public Document toDocument(final Object object) {
+        final MappedClass mapping = cache.getMappingFor(object.getClass());
+
+        final DocumentBuilder builder = BuilderFactory.start();
+        final MappedField id = mapping.getIdField();
+        if (id != null) {
+            if (id.isWritten()) {
+                builder.add(fieldConverter.toElement(mapping, id, "_id",
+                        id.get(object)));
+            }
+        }
+
+        final MappedField version = mapping.getVersionField();
+        if (version != null) {
+            if (version.isWritten()) {
+                builder.add(fieldConverter.toElement(mapping, version,
+                        version.getMappedFieldName(), version.get(object)));
+            }
+        }
+
+        if (mapping.isClassnameStored()) {
+            builder.add(MappedClass.CLASS_NAME_FIELD, object.getClass()
+                    .getCanonicalName());
+        }
+
+        for (final MappedField field : mapping.getFields()) {
+            if (field.isWritten() && (field != id) && (field != version)) {
+                builder.add(fieldConverter.toElement(mapping, field,
+                        field.getMappedFieldName(), field.get(object)));
+            }
+        }
+
+        return builder.build();
     }
 }

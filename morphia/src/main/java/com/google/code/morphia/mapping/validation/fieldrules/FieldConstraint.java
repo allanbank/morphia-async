@@ -15,8 +15,10 @@ import com.google.code.morphia.state.MappedField;
  * 
  */
 public abstract class FieldConstraint implements ClassConstraint {
-    public final void check(MappedClass mc, Set<ConstraintViolation> ve) {
-        for (MappedField mf : mc.getFields()) {
+    @Override
+    public final void check(final MappedClass mc,
+            final Set<ConstraintViolation> ve) {
+        for (final MappedField mf : mc.getFields()) {
             check(mc, mf, ve);
         }
     }

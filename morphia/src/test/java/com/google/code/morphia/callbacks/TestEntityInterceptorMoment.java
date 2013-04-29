@@ -7,7 +7,7 @@ import org.bson.types.ObjectId;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.code.morphia.AbstractEntityInterceptor;
+import com.google.code.morphia.EntityInterceptorAdapter;
 import com.google.code.morphia.TestBase;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.PrePersist;
@@ -32,7 +32,7 @@ public class TestEntityInterceptorMoment extends TestBase {
 		}
 	}
 	
-	public static class Interceptor extends AbstractEntityInterceptor {
+	public static class Interceptor extends EntityInterceptorAdapter {
 		
 		public void PostLoad(Object ent, DBObject dbObj, Mapper mapr) {
 			// TODO Auto-generated method stub

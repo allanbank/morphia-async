@@ -49,45 +49,8 @@ public class KeyConverter implements FieldConverter<Key> {
      * @param mappedClassCache
      *            The cache of mapped classes.
      */
-    public KeyConverter(MappedClassCache mappedClassCache) {
+    public KeyConverter(final MappedClassCache mappedClassCache) {
         this.mappedClassCache = mappedClassCache;
-    }
-
-    /**
-     * Converts a {@link DocumentReference} into a {@link Key}.
-     * 
-     * @param ref
-     *            The reference to convert.
-     * @return The converted reference.
-     */
-    protected <T> Key<T> refToKey(DocumentReference ref) {
-        if (ref == null)
-            return null;
-        Key<T> key = new Key<T>(ref.getCollectionName(), ref.getId());
-        return key;
-    }
-
-    /**
-     * Converts a {@link Key} into a {@link DocumentReference}.
-     * 
-     * @param key
-     *            The {@link Key} to convert.
-     * @return The converted key.
-     */
-    protected DocumentReference keyToRef(Key key) {
-        if (key == null)
-            return null;
-        if (key.getKindClass() == null && key.getKind() == null)
-            throw new IllegalStateException(
-                    "The key must contain either a class of a collection name.");
-        if (key.getKind() == null) {
-            key.setKind(mappedClassCache.getMappingFor(key.getKindClass())
-                    .getCollectionName());
-        }
-
-        Element idElement = BuilderFactory.start().add("_id", key.getId())
-                .build().get("_id");
-        return new DocumentReference(key.getKind(), idElement);
     }
 
     /**
@@ -97,27 +60,9 @@ public class KeyConverter implements FieldConverter<Key> {
      * </p>
      */
     @Override
-    public boolean canConvert(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field) {
+    public boolean canConvert(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field) {
         return KEY_CLASS.isAssignableFrom(field.getResolvedClass());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Overridden to return a {@link DocumentElement} containing the key as a
-     * {@link DocumentReference} or DBRef.
-     * </p>
-     */
-    @Override
-    public Element toElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, String name,
-            Key value) {
-        if (value == null) {
-            return new NullElement(name);
-        }
-
-        return new DocumentElement(name, keyToRef(value).asDocument());
     }
 
     /**
@@ -128,8 +73,9 @@ public class KeyConverter implements FieldConverter<Key> {
      * </p>
      */
     @Override
-    public Key fromElement(MappedClass clazz,
-            com.google.code.morphia.state.MappedField field, Element element) {
+    public Key fromElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final Element element) {
         DocumentReference ref = null;
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
@@ -145,5 +91,63 @@ public class KeyConverter implements FieldConverter<Key> {
                             element.toString()));
         }
         return refToKey(ref);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to return a {@link DocumentElement} containing the key as a
+     * {@link DocumentReference} or DBRef.
+     * </p>
+     */
+    @Override
+    public Element toElement(final MappedClass clazz,
+            final com.google.code.morphia.state.MappedField field,
+            final String name, final Key value) {
+        if (value == null) {
+            return new NullElement(name);
+        }
+
+        return new DocumentElement(name, keyToRef(value).asDocument());
+    }
+
+    /**
+     * Converts a {@link Key} into a {@link DocumentReference}.
+     * 
+     * @param key
+     *            The {@link Key} to convert.
+     * @return The converted key.
+     */
+    protected DocumentReference keyToRef(final Key key) {
+        if (key == null) {
+            return null;
+        }
+        if ((key.getKindClass() == null) && (key.getKind() == null)) {
+            throw new IllegalStateException(
+                    "The key must contain either a class of a collection name.");
+        }
+        if (key.getKind() == null) {
+            key.setKind(mappedClassCache.getMappingFor(key.getKindClass())
+                    .getCollectionName());
+        }
+
+        final Element idElement = BuilderFactory.start()
+                .add("_id", key.getId()).build().get("_id");
+        return new DocumentReference(key.getKind(), idElement);
+    }
+
+    /**
+     * Converts a {@link DocumentReference} into a {@link Key}.
+     * 
+     * @param ref
+     *            The reference to convert.
+     * @return The converted reference.
+     */
+    protected <T> Key<T> refToKey(final DocumentReference ref) {
+        if (ref == null) {
+            return null;
+        }
+        final Key<T> key = new Key<T>(ref.getCollectionName(), ref.getId());
+        return key;
     }
 }

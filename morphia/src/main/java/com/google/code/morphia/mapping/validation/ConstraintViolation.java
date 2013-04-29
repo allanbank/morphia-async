@@ -7,34 +7,28 @@ import com.google.code.morphia.state.MappedField;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  */
 public class ConstraintViolation {
-    public enum Level {
-        MINOR, INFO, WARNING, SEVERE, FATAL;
-    }
-
     private final MappedClass clazz;
+
     private MappedField field = null;
-    private Class<? extends ClassConstraint> validator;
-    private final String message;
     private final Level level;
+    private final String message;
+    private final Class<? extends ClassConstraint> validator;
 
-    public ConstraintViolation(Level level, MappedClass clazz,
-            MappedField field, Class<? extends ClassConstraint> validator,
-            String message) {
-        this(level, clazz, validator, message);
-        this.field = field;
-    }
-
-    public ConstraintViolation(Level level, MappedClass clazz,
-            Class<? extends ClassConstraint> validator, String message) {
+    public ConstraintViolation(final Level level, final MappedClass clazz,
+            final Class<? extends ClassConstraint> validator,
+            final String message) {
         this.level = level;
         this.clazz = clazz;
         this.message = message;
         this.validator = validator;
     }
 
-    public String render() {
-        return String.format("%s complained about %s : %s",
-                validator.getSimpleName(), getPrefix(), message);
+    public ConstraintViolation(final Level level, final MappedClass clazz,
+            final MappedField field,
+            final Class<? extends ClassConstraint> validator,
+            final String message) {
+        this(level, clazz, validator, message);
+        this.field = field;
     }
 
     public Level getLevel() {
@@ -42,7 +36,16 @@ public class ConstraintViolation {
     }
 
     public String getPrefix() {
-        String fn = (field != null) ? field.getField().getName() : "";
+        final String fn = (field != null) ? field.getField().getName() : "";
         return clazz.getMappedClass().getName() + "." + fn;
+    }
+
+    public String render() {
+        return String.format("%s complained about %s : %s",
+                validator.getSimpleName(), getPrefix(), message);
+    }
+
+    public enum Level {
+        FATAL, INFO, MINOR, SEVERE, WARNING;
     }
 }

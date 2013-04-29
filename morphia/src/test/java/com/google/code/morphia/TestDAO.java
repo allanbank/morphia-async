@@ -25,8 +25,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.google.code.morphia.dao.BasicDAO;
-import com.google.code.morphia.dao.DAO;
+import com.google.code.morphia.impl.DAOImpl;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.testdaos.HotelDAO;
@@ -44,7 +43,7 @@ public class TestDAO extends TestBase {
     public void testNewDAO() throws Exception {
         morphia.map(Hotel.class);
 
-        DAO<Hotel, String> hotelDAO = new BasicDAO<Hotel,String>(Hotel.class, mongo, morphia, "morphia_test");
+        DAO<Hotel, String> hotelDAO = new DAOImpl<Hotel,String>(Hotel.class, mongo, morphia, "morphia_test");
 
         Hotel borg = Hotel.create();
         borg.setName("Hotel Borg");

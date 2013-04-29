@@ -14,11 +14,12 @@ import com.google.code.morphia.state.MappedField;
  */
 public class DuplicatedAttributeNames implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
-        Set<String> foundNames = new HashSet<String>();
-        Set<String> duplicates = new HashSet<String>();
-        for (MappedField mappedField : mc.getFields()) {
-            for (String name : mappedField.getAlsoLoadNames()) {
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
+        final Set<String> foundNames = new HashSet<String>();
+        final Set<String> duplicates = new HashSet<String>();
+        for (final MappedField mappedField : mc.getFields()) {
+            for (final String name : mappedField.getAlsoLoadNames()) {
                 // if (duplicates.contains(name)) {
                 // continue;
                 // }

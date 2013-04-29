@@ -42,25 +42,12 @@ public class ObjectIdConverter extends AbstractBasicFieldConverter<ObjectId> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link ObjectIdElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, ObjectId object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new ObjectIdElement(name, object);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link ObjectId}.
      * </p>
      */
     @Override
-    public ObjectId fromElement(Class<?> mappingType, Element element) {
+    public ObjectId fromElement(final Class<?> mappingType,
+            final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -80,7 +67,7 @@ public class ObjectIdConverter extends AbstractBasicFieldConverter<ObjectId> {
             try {
                 return new ObjectId(element.getValueAsString());
             }
-            catch (IllegalArgumentException e) {
+            catch (final IllegalArgumentException e) {
                 throw new MappingException("Invalid ObjectId string '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -88,5 +75,20 @@ public class ObjectIdConverter extends AbstractBasicFieldConverter<ObjectId> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into an ObjectId.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link ObjectIdElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final ObjectId object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new ObjectIdElement(name, object);
     }
 }

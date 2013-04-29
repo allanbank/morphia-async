@@ -26,13 +26,15 @@ import java.lang.annotation.Target;
 
 /**
  * Called before the data has been loaded from the datastore.
+ * 
  * @author Scott Hernandez
  * @copyright 2010-2013, Scott Hernandez and Allanbank Consulting, Inc., All
  *            Rights Reserved
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface PreLoad {
     // Marker
 }

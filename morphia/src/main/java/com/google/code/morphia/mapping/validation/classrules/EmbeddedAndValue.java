@@ -17,10 +17,11 @@ import com.google.code.morphia.state.MappedClass;
  */
 public class EmbeddedAndValue implements ClassConstraint {
 
-    public void check(MappedClass mc, Set<ConstraintViolation> ve) {
+    @Override
+    public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
 
-        Class<?> clazz = mc.getMappedClass();
-        Embedded embedded = clazz.getAnnotation(Embedded.class);
+        final Class<?> clazz = mc.getMappedClass();
+        final Embedded embedded = clazz.getAnnotation(Embedded.class);
         if ((embedded != null)
                 && !embedded.value().equals(Embedded.IGNORED_FIELDNAME)) {
             ve.add(new ConstraintViolation(Level.FATAL, mc, this.getClass(),

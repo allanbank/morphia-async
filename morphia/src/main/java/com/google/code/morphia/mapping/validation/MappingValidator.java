@@ -11,13 +11,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Property;
 import com.google.code.morphia.annotations.Reference;
 import com.google.code.morphia.annotations.Serialized;
-import com.google.code.morphia.logging.Logr;
-import com.google.code.morphia.logging.MorphiaLoggerFactory;
 import com.google.code.morphia.mapping.validation.ConstraintViolation.Level;
 import com.google.code.morphia.mapping.validation.classrules.DuplicatedAttributeNames;
 import com.google.code.morphia.mapping.validation.classrules.EmbeddedAndId;
@@ -41,49 +40,59 @@ import com.google.code.morphia.state.MappedClass;
  */
 public class MappingValidator {
 
-    private static final Logr logger = MorphiaLoggerFactory
-            .get(MappingValidator.class);
+    private static final Logger logger = Logger
+            .getLogger(MappingValidator.class.getName());
 
-    public void validate(List<MappedClass> classes) {
-        Set<ConstraintViolation> ve = new TreeSet<ConstraintViolation>(
+    public void validate(final List<MappedClass> classes) {
+        final Set<ConstraintViolation> ve = new TreeSet<ConstraintViolation>(
                 new Comparator<ConstraintViolation>() {
 
-                    public int compare(ConstraintViolation o1,
-                            ConstraintViolation o2) {
+                    @Override
+                    public int compare(final ConstraintViolation o1,
+                            final ConstraintViolation o2) {
                         return o1.getLevel().ordinal() > o2.getLevel()
                                 .ordinal() ? -1 : 1;
                     }
                 });
 
-        List<ClassConstraint> rules = getConstraints();
-        for (MappedClass c : classes) {
-            for (ClassConstraint v : rules) {
+        final List<ClassConstraint> rules = getConstraints();
+        for (final MappedClass c : classes) {
+            for (final ClassConstraint v : rules) {
                 v.check(c, ve);
             }
         }
 
         if (!ve.isEmpty()) {
-            ConstraintViolation worst = ve.iterator().next();
-            Level maxLevel = worst.getLevel();
+            final ConstraintViolation worst = ve.iterator().next();
+            final Level maxLevel = worst.getLevel();
             if (maxLevel.ordinal() >= Level.FATAL.ordinal()) {
                 throw new ConstraintViolationException(ve);
             }
 
             // sort by class to make it more readable
-            ArrayList<LogLine> l = new ArrayList<LogLine>();
-            for (ConstraintViolation v : ve) {
+            final ArrayList<LogLine> l = new ArrayList<LogLine>();
+            for (final ConstraintViolation v : ve) {
                 l.add(new LogLine(v));
             }
             Collections.sort(l);
 
-            for (LogLine line : l) {
+            for (final LogLine line : l) {
                 line.log(MappingValidator.logger);
             }
         }
     }
 
+    /**
+     * i definitely vote for all at once validation
+     */
+    @Deprecated
+    public void validate(final MappedClass mappedClass) {
+        validate(Arrays.asList(mappedClass));
+    }
+
     private List<ClassConstraint> getConstraints() {
-        List<ClassConstraint> constraints = new ArrayList<ClassConstraint>(32);
+        final List<ClassConstraint> constraints = new ArrayList<ClassConstraint>(
+                32);
 
         // normally, i do this with scanning the classpath, but that´d bring
         // another dependency ;)
@@ -125,23 +134,28 @@ public class MappingValidator {
     }
 
     class LogLine implements Comparable<LogLine> {
-        private ConstraintViolation v;
+        private final ConstraintViolation v;
 
-        LogLine(ConstraintViolation v) {
+        LogLine(final ConstraintViolation v) {
             this.v = v;
         }
 
-        void log(Logr logger) {
+        @Override
+        public int compareTo(final LogLine o) {
+            return v.getPrefix().compareTo(o.v.getPrefix());
+        }
+
+        void log(final Logger logger) {
             switch (v.getLevel()) {
             case SEVERE:
-                logger.error(v.render());
+                logger.severe(v.render());
             case WARNING:
                 logger.warning(v.render());
             case INFO:
                 logger.info(v.render());
                 break;
             case MINOR:
-                logger.debug(v.render());
+                logger.fine(v.render());
                 break;
 
             default:
@@ -150,17 +164,5 @@ public class MappingValidator {
                         + " of Level " + v.getLevel());
             }
         }
-
-        public int compareTo(LogLine o) {
-            return v.getPrefix().compareTo(o.v.getPrefix());
-        }
-    }
-
-    /**
-     * i definitely vote for all at once validation
-     */
-    @Deprecated
-    public void validate(MappedClass mappedClass) {
-        validate(Arrays.asList(mappedClass));
     }
 }

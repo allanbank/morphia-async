@@ -9,13 +9,13 @@ import java.util.ConcurrentModificationException;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  */
 public class LazyReferenceFetchingException extends
-		ConcurrentModificationException {
-	/**
+        ConcurrentModificationException {
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public LazyReferenceFetchingException(final String msg) {
-		super(msg);
-	}
+    public LazyReferenceFetchingException(final String msg) {
+        super(msg);
+    }
 }

@@ -13,7 +13,7 @@ import com.google.code.morphia.DatastoreImpl;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;
-import com.google.code.morphia.dao.BasicDAO;
+import com.google.code.morphia.impl.DAOImpl;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoURI;
@@ -49,7 +49,7 @@ public class TestMapping {
     @SuppressWarnings("rawtypes")
 	@Test
     public void testMapping() {
-       BasicDAO<Message,ObjectId> messageDAO = new BasicDAO<Message,ObjectId>(Message.class,datastore);
+       DAOImpl<Message,ObjectId> messageDAO = new DAOImpl<Message,ObjectId>(Message.class,datastore);
        Assert.assertNotNull(messageDAO);
     }
     

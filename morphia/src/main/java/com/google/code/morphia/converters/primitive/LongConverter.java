@@ -43,34 +43,20 @@ public class LongConverter extends AbstractBasicFieldConverter<Long> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link LongElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, Long object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new LongElement(name, object.intValue());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Long}.
      * </p>
      */
     @Override
-    public Long fromElement(Class<?> mappingType, Element element) {
+    public Long fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
         else if (element.getType() == ElementType.INTEGER) {
-            int value = ((LongElement) element).getIntValue();
+            final int value = ((LongElement) element).getIntValue();
             return Long.valueOf(value);
         }
         else if (element instanceof NumericElement) {
-            int value = ((NumericElement) element).getIntValue();
+            final int value = ((NumericElement) element).getIntValue();
             return Long.valueOf(value);
         }
         else if ((element.getType() == ElementType.STRING)
@@ -78,7 +64,7 @@ public class LongConverter extends AbstractBasicFieldConverter<Long> {
             try {
                 return Long.valueOf(element.getValueAsString());
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
                 throw new MappingException("Invalid long string name '"
                         + element.getValueAsString() + "'.", e);
             }
@@ -86,5 +72,20 @@ public class LongConverter extends AbstractBasicFieldConverter<Long> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a Long.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link LongElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final Long object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new LongElement(name, object.intValue());
     }
 }

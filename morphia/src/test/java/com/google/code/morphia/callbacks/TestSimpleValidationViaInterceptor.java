@@ -15,7 +15,7 @@ import org.junit.Assert;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 
-import com.google.code.morphia.AbstractEntityInterceptor;
+import com.google.code.morphia.EntityInterceptorAdapter;
 import com.google.code.morphia.TestBase;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.PrePersist;
@@ -57,7 +57,7 @@ public class TestSimpleValidationViaInterceptor extends TestBase {
 	public static @interface NonNull {
 	}
 	
-	public static class NonNullValidation extends AbstractEntityInterceptor {
+	public static class NonNullValidation extends EntityInterceptorAdapter {
 		public void prePersist(Object ent, DBObject dbObj, Mapper mapr) {
 			MappedClass mc = mapr.getMappedClass(ent);
 			List<MappedField> fieldsToTest = mc.getFieldsAnnotatedWith(NonNull.class);

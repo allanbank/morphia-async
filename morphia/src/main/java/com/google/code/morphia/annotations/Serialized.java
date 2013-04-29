@@ -37,7 +37,6 @@ public @interface Serialized {
     /** The ignored field name. */
     public static final String IGNORED_FIELDNAME = Property.IGNORED_FIELDNAME;
 
-
     /** If true then the serialized field will not be compressed. */
     boolean disableCompression() default false;
 

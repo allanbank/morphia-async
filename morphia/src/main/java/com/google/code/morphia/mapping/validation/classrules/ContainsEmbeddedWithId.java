@@ -18,20 +18,10 @@ import com.google.code.morphia.utils.ReflectionUtils;
  */
 public class ContainsEmbeddedWithId implements ClassConstraint {
 
-    private boolean hasTypeFieldAnnotation(final Class<?> type,
-            final Class<Id> class1) {
-        for (Field field : ReflectionUtils.getDeclaredAndInheritedFields(type,
-                true)) {
-            if (field.getAnnotation(class1) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    @Override
     public void check(final MappedClass mc, final Set<ConstraintViolation> ve) {
-        Set<Class<?>> classesToInspect = new HashSet<Class<?>>();
-        for (Field field : ReflectionUtils.getDeclaredAndInheritedFields(
+        final Set<Class<?>> classesToInspect = new HashSet<Class<?>>();
+        for (final Field field : ReflectionUtils.getDeclaredAndInheritedFields(
                 mc.getMappedClass(), true)) {
             if (isFieldToInspect(field) && !field.isAnnotationPresent(Id.class)) {
                 classesToInspect.add(field.getType());
@@ -41,16 +31,11 @@ public class ContainsEmbeddedWithId implements ClassConstraint {
                 new HashSet<Class<?>>(), mc, ve);
     }
 
-    private boolean isFieldToInspect(final Field field) {
-        return (!field.isAnnotationPresent(Transient.class) && !field
-                .isAnnotationPresent(Reference.class));
-    }
-
     private void checkRecursivelyHasNoIdAnnotationPresent(
             final Set<Class<?>> classesToInspect,
             final HashSet<Class<?>> alreadyInspectedClasses,
             final MappedClass mc, final Set<ConstraintViolation> ve) {
-        for (Class<?> clazz : classesToInspect) {
+        for (final Class<?> clazz : classesToInspect) {
             if (alreadyInspectedClasses.contains(clazz)) {
                 continue;
             }
@@ -60,9 +45,9 @@ public class ContainsEmbeddedWithId implements ClassConstraint {
                         "You cannot use @Id on any field of an Embedded/Property object"));
             }
             alreadyInspectedClasses.add(clazz);
-            Set<Class<?>> extraClassesToInspect = new HashSet<Class<?>>();
-            for (Field field : ReflectionUtils.getDeclaredAndInheritedFields(
-                    clazz, true)) {
+            final Set<Class<?>> extraClassesToInspect = new HashSet<Class<?>>();
+            for (final Field field : ReflectionUtils
+                    .getDeclaredAndInheritedFields(clazz, true)) {
                 if (isFieldToInspect(field)) {
                     extraClassesToInspect.add(field.getType());
                 }
@@ -70,5 +55,21 @@ public class ContainsEmbeddedWithId implements ClassConstraint {
             checkRecursivelyHasNoIdAnnotationPresent(extraClassesToInspect,
                     alreadyInspectedClasses, mc, ve);
         }
+    }
+
+    private boolean hasTypeFieldAnnotation(final Class<?> type,
+            final Class<Id> class1) {
+        for (final Field field : ReflectionUtils.getDeclaredAndInheritedFields(
+                type, true)) {
+            if (field.getAnnotation(class1) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isFieldToInspect(final Field field) {
+        return (!field.isAnnotationPresent(Transient.class) && !field
+                .isAnnotationPresent(Reference.class));
     }
 }

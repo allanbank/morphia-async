@@ -10,14 +10,14 @@ import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
-import com.google.code.morphia.AbstractEntityInterceptor;
+import com.google.code.morphia.EntityInterceptorAdapter;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.mapping.Mapper;
 
 /**
  * @author us@thomas-daily.de
  */
-public class ValidationExtension extends AbstractEntityInterceptor {
+public class ValidationExtension extends EntityInterceptorAdapter {
     private ValidatorFactory validationFactory;
     private Mapper mapper;
 

@@ -42,25 +42,11 @@ public class StringConverter extends AbstractBasicFieldConverter<String> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link StringElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, String object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-        return new StringElement(name, object);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to return the element's value as a {@link Short}.
      * </p>
      */
     @Override
-    public String fromElement(Class<?> mappingType, Element element) {
+    public String fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -71,5 +57,20 @@ public class StringConverter extends AbstractBasicFieldConverter<String> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " into a String.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link StringElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final String object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+        return new StringElement(name, object);
     }
 }

@@ -4,31 +4,31 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 
 import com.google.code.morphia.Key;
-import com.google.code.morphia.logging.Logr;
-import com.google.code.morphia.logging.MorphiaLoggerFactory;
 import com.google.code.morphia.mapping.lazy.LazyFeatureDependencies;
 import com.google.code.morphia.mapping.lazy.proxy.ProxyHelper;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class DefaultEntityCache implements EntityCache {
 
-    private static final Logr log = MorphiaLoggerFactory
-            .get(DefaultEntityCache.class);
+    private static final Logger log = Logger.getLogger(DefaultEntityCache.class
+            .getName());
 
     private final Map<Key, WeakReference<Object>> entityMap = new HashMap<Key, WeakReference<Object>>();
-    private final Map<Key, WeakReference<Object>> proxyMap = new WeakHashMap<Key, WeakReference<Object>>();
     private final Map<Key, Boolean> existenceMap = new HashMap<Key, Boolean>();
+    private final Map<Key, WeakReference<Object>> proxyMap = new WeakHashMap<Key, WeakReference<Object>>();
     private final EntityCacheStatistics stats = new EntityCacheStatistics();
 
-    public Boolean exists(Key<?> k) {
+    @Override
+    public Boolean exists(final Key<?> k) {
         if (entityMap.containsKey(k)) {
             stats.hits++;
             return true;
         }
 
-        Boolean b = existenceMap.get(k);
+        final Boolean b = existenceMap.get(k);
         if (b == null) {
             stats.misses++;
         }
@@ -38,12 +38,16 @@ public class DefaultEntityCache implements EntityCache {
         return b;
     }
 
-    public void notifyExists(Key<?> k, boolean exists) {
-        existenceMap.put(k, exists);
-        stats.entities++;
+    @Override
+    public void flush() {
+        entityMap.clear();
+        existenceMap.clear();
+        proxyMap.clear();
+        stats.reset();
     }
 
-    public <T> T getEntity(Key<T> k) {
+    @Override
+    public <T> T getEntity(final Key<T> k) {
         Object o = null;
         WeakReference<Object> ref = entityMap.get(k);
         if (ref != null) {
@@ -72,9 +76,10 @@ public class DefaultEntityCache implements EntityCache {
         return (T) o;
     }
 
-    public <T> T getProxy(Key<T> k) {
+    @Override
+    public <T> T getProxy(final Key<T> k) {
         Object o = null;
-        WeakReference<Object> ref = proxyMap.get(k);
+        final WeakReference<Object> ref = proxyMap.get(k);
         if (ref != null) {
             o = ref.get();
         }
@@ -89,24 +94,26 @@ public class DefaultEntityCache implements EntityCache {
         return (T) o;
     }
 
-    public <T> void putProxy(Key<T> k, T t) {
+    @Override
+    public void notifyExists(final Key<?> k, final boolean exists) {
+        existenceMap.put(k, exists);
+        stats.entities++;
+    }
+
+    @Override
+    public <T> void putEntity(final Key<T> k, final T t) {
+        notifyExists(k, true); // already registers a write
+        entityMap.put(k, new WeakReference<Object>(t));
+    }
+
+    @Override
+    public <T> void putProxy(final Key<T> k, final T t) {
         proxyMap.put(k, new WeakReference<Object>(t));
         stats.entities++;
 
     }
 
-    public <T> void putEntity(Key<T> k, T t) {
-        notifyExists(k, true); // already registers a write
-        entityMap.put(k, new WeakReference<Object>(t));
-    }
-
-    public void flush() {
-        entityMap.clear();
-        existenceMap.clear();
-        proxyMap.clear();
-        stats.reset();
-    }
-
+    @Override
     public EntityCacheStatistics stats() {
         return stats.copy();
     }

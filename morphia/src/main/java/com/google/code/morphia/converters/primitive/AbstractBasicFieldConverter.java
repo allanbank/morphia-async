@@ -41,7 +41,7 @@ public abstract class AbstractBasicFieldConverter<T> implements
      * @param supportedTypes
      *            The complete set of classes this converter supports.
      */
-    public AbstractBasicFieldConverter(Class<?>... supportedTypes) {
+    public AbstractBasicFieldConverter(final Class<?>... supportedTypes) {
         super();
 
         this.supportedTypes = Collections
@@ -56,8 +56,8 @@ public abstract class AbstractBasicFieldConverter<T> implements
      * </p>
      */
     @Override
-    public boolean canConvert(Class<?> mappingType) {
-        for (Class<?> supportedType : supportedTypes) {
+    public boolean canConvert(final Class<?> mappingType) {
+        for (final Class<?> supportedType : supportedTypes) {
             if (mappingType == supportedType) {
                 return true;
             }

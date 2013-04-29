@@ -15,18 +15,19 @@ import com.google.code.morphia.state.MappedField;
 public class FieldEnumString {
     private final String display;
 
-    public FieldEnumString(MappedField... fields) {
-        this(Arrays.asList(fields));
-    }
-
-    public FieldEnumString(List<MappedField> fields) {
-        StringBuffer sb = new StringBuffer(128);
-        for (MappedField mappedField : fields) {
-            if (sb.length() > 0)
+    public FieldEnumString(final List<MappedField> fields) {
+        final StringBuffer sb = new StringBuffer(128);
+        for (final MappedField mappedField : fields) {
+            if (sb.length() > 0) {
                 sb.append(", ");
+            }
             sb.append(mappedField.getMappedFieldName());
         }
         this.display = sb.toString();
+    }
+
+    public FieldEnumString(final MappedField... fields) {
+        this(Arrays.asList(fields));
     }
 
     @Override

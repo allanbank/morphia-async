@@ -27,7 +27,7 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Version;
-import com.google.code.morphia.dao.BasicDAO;
+import com.google.code.morphia.impl.DAOImpl;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
 
 @RunWith(ConcurrentJunitRunner.class)
@@ -261,7 +261,7 @@ public class ExampleServiceTest extends TestCase {
             BookingDetail bookingDetail = new BookingDetail();
             bookingDetail.setDate((String) key.getId());
             createSlots(bookingDetail.getBookingSlot());
-            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+            DAOImpl<BookingDetail, ObjectId> dao = new DAOImpl<BookingDetail, ObjectId>(
                     BookingDetail.class, mongoConnectionManager.getDb());
             Key<BookingDetail> result = ((AdvancedDatastore) dao.getDatastore())
                     .insert(bookingDetail);
@@ -270,7 +270,7 @@ public class ExampleServiceTest extends TestCase {
         }
 
         public BookingDetail load(Key<BookingDetail> key) {
-            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+            DAOImpl<BookingDetail, ObjectId> dao = new DAOImpl<BookingDetail, ObjectId>(
                     BookingDetail.class, mongoConnectionManager.getDb());
             return dao.getDatastore().getByKey(BookingDetail.class, key);
 
@@ -278,7 +278,7 @@ public class ExampleServiceTest extends TestCase {
 
         public Key<BookingDetail> update(BookingDetail bd) {
 
-            BasicDAO<BookingDetail, ObjectId> dao = new BasicDAO<BookingDetail, ObjectId>(
+            DAOImpl<BookingDetail, ObjectId> dao = new DAOImpl<BookingDetail, ObjectId>(
                     BookingDetail.class, mongoConnectionManager.getDb());
 
             Key<BookingDetail> result = dao.getDatastore().save(bd);

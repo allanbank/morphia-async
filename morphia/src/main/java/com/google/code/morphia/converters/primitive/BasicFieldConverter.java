@@ -41,6 +41,17 @@ public interface BasicFieldConverter<T> {
     public boolean canConvert(Class<?> mappingType);
 
     /**
+     * Converts an element into the specified object type.
+     * 
+     * @param mappingType
+     *            The class of object being created.
+     * @param element
+     *            The element containing the mapped type.
+     * @return The converted object.
+     */
+    public T fromElement(Class<?> mappingType, Element element);
+
+    /**
      * Converts the object to an element of the specified type.
      * 
      * @param mappingType
@@ -52,15 +63,4 @@ public interface BasicFieldConverter<T> {
      * @return The element wrapping the name and value.
      */
     public Element toElement(Class<?> mappingType, String name, T object);
-
-    /**
-     * Converts an element into the specified object type.
-     * 
-     * @param mappingType
-     *            The class of object being created.
-     * @param element
-     *            The element containing the mapped type.
-     * @return The converted object.
-     */
-    public T fromElement(Class<?> mappingType, Element element);
 }

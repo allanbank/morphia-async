@@ -38,26 +38,11 @@ public class ByteArrayConverter extends AbstractBasicFieldConverter<byte[]> {
     /**
      * {@inheritDoc}
      * <p>
-     * Overridden to convert the {@code object} into a {@link BinaryElement}.
-     * </p>
-     */
-    @Override
-    public Element toElement(Class<?> mappingType, String name, byte[] object) {
-        if (object == null) {
-            return new NullElement(name);
-        }
-
-        return new BinaryElement(name, object);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * Overridden to convert the {@code element} into a byte[] value.
      * </p>
      */
     @Override
-    public byte[] fromElement(Class<?> mappingType, Element element) {
+    public byte[] fromElement(final Class<?> mappingType, final Element element) {
         if ((element == null) || (element.getType() == ElementType.NULL)) {
             return null;
         }
@@ -67,5 +52,21 @@ public class ByteArrayConverter extends AbstractBasicFieldConverter<byte[]> {
 
         throw new MappingException("Could not figure out how to map a "
                 + element.getClass().getSimpleName() + " byteo a byte[].");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden to convert the {@code object} into a {@link BinaryElement}.
+     * </p>
+     */
+    @Override
+    public Element toElement(final Class<?> mappingType, final String name,
+            final byte[] object) {
+        if (object == null) {
+            return new NullElement(name);
+        }
+
+        return new BinaryElement(name, object);
     }
 }

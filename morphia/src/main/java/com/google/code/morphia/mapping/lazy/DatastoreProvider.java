@@ -17,5 +17,5 @@ import com.google.code.morphia.Datastore;
  * @author uwe schaefer
  */
 public interface DatastoreProvider extends Serializable {
-	Datastore get();
+    Datastore get();
 }
