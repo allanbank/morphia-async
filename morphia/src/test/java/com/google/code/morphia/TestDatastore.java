@@ -386,17 +386,4 @@ public class TestDatastore  extends TestBase {
         assertEquals(borg.getName(), hotelLoaded.getName());
         assertEquals(borg.getAddress().getPostCode(), hotelLoaded.getAddress().getPostCode());
     }
-	
-	@Test
-	public void testAuthentication() throws Exception {
-		new AssertedFailure(AuthenticationException.class) {
-			
-			@Override
-			protected void thisMustFail() throws Throwable {
-				morphia.createDatastore(mongo, TestDatastore.this.db.getName(),
-						"SomeWeirdUserName" + System.nanoTime(),
-						("SomeWeirdPassword" + System.nanoTime()).toCharArray());
-			}
-		};
-	}
 }

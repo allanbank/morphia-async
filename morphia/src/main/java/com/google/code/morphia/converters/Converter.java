@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import com.allanbank.mongodb.bson.Document;
+import com.allanbank.mongodb.bson.DocumentReference;
 import com.allanbank.mongodb.bson.Element;
 import com.allanbank.mongodb.bson.builder.BuilderFactory;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
@@ -51,6 +52,35 @@ public class Converter {
     public Converter(final MappedClassCache cache) {
         this.cache = cache;
         this.fieldConverter = new CachingFieldConverter(this);
+    }
+
+    /**
+     * Returns the {@code id} value wrapped as a {@link DocumentReference} based
+     * on the mapping for the id field of the {@code clazz}.
+     * 
+     * @param clazz
+     *            The class containing the id value.
+     * @param id
+     *            The id value to map.
+     * @return The {@link DocumentReference} for an object with the specified
+     *         id.
+     */
+    public <T, V> DocumentReference toDocumentReference(Class<T> clazz, V id) {
+        // TODO - Implement.
+        return null;
+    }
+
+    /**
+     * Returns a DocumentReference for the entity.
+     * 
+     * @param entity
+     *            The entity to create a document reference for.
+     * @return The {@link DocumentReference} for an object with the specified
+     *         id.
+     */
+    public <T> DocumentReference toDocumentReference(T entity) {
+        // TODO - Implement.
+        return null;
     }
 
     /**

@@ -19,17 +19,26 @@ package com.google.code.morphia.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import com.allanbank.mongodb.Durability;
 import com.allanbank.mongodb.MongoClient;
 import com.allanbank.mongodb.MongoCollection;
 import com.allanbank.mongodb.MongoDatabase;
+import com.allanbank.mongodb.MongoDbException;
 import com.allanbank.mongodb.bson.DocumentReference;
+import com.allanbank.mongodb.bson.builder.BuilderFactory;
+import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Key;
+import com.google.code.morphia.converters.Converter;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.QueryImpl;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.code.morphia.query.UpdateOpsImpl;
 import com.google.code.morphia.state.MappedClass;
 import com.google.code.morphia.state.MappedClassCache;
 import com.google.code.morphia.utils.IndexDirection;
@@ -54,6 +63,9 @@ public class DatastoreImpl implements Datastore {
     /** The connection to MongoDB being used. */
     private final MongoClient mongo;
 
+    /** The connection to MongoDB being used. */
+    private final Converter converter;
+
     /**
      * Creates a new DatastoreImpl.
      * 
@@ -70,102 +82,171 @@ public class DatastoreImpl implements Datastore {
         this.classCache = classCache;
 
         this.database = this.mongo.getDatabase(databaseName);
+        this.converter = new Converter(classCache);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to construct a {@link QueryImpl}.
      * </p>
      */
     @Override
     public <T> Query<T> createQuery(final Class<T> kind) {
-        // TODO Auto-generated method stub
-        return null;
+        return new QueryImpl<T>(kind, toCollection(kind), this);
     }
 
-    @Override
-    public <T, V> DocumentReference createRef(Class<T> clazz, V id) {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * Returns the collection for the {@code kind}.
+     * 
+     * @param kind
+     *            The kind for the object.
+     * @return The {@link MongoCollection} containing the objects of the class.
+     */
+    private <T> MongoCollection toCollection(final Class<T> kind) {
+        return database.getCollection(toCollectionName(kind));
     }
 
-    @Override
-    public <T> DocumentReference createRef(T entity) {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * Returns the collection name for the {@code kind}.
+     * 
+     * @param kind
+     *            The kind for the object.
+     * @return The name of the collection containing the objects of the class.
+     */
+    private <T> String toCollectionName(final Class<T> kind) {
+        return classCache.getMappingFor(kind).getCollectionName();
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to convert the value to a {@link DocumentReference}.
+     * </p>
+     */
+    @Override
+    public <T, V> DocumentReference createRef(Class<T> clazz, V id) {
+        return converter.toDocumentReference(clazz, id);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overriden to convert the value to a {@link DocumentReference}.
+     * </p>
+     */
+    @Override
+    public <T> DocumentReference createRef(T entity) {
+        return converter.toDocumentReference(entity);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overriden to return an {@link UpdateOpsImpl}.
      * </p>
      */
     @Override
     public <T> UpdateOperations<T> createUpdateOperations(final Class<T> kind) {
-        // TODO Auto-generated method stub
-        return null;
+        return new UpdateOpsImpl<T>(kind, converter);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to delete the entities with the specified asynchronously
+     * collecting results.
      * </p>
      */
     @Override
     public <T, V> long delete(final Class<T> clazz, final Iterable<V> ids) {
-        // TODO Auto-generated method stub
-        return 0;
+        MongoCollection collection = toCollection(clazz);
+
+        long deleted = 0;
+        BlockingQueue<Future<Long>> pending = new ArrayBlockingQueue<Future<Long>>(
+                100);
+        DocumentBuilder builder = BuilderFactory.start();
+        for (V id : ids) {
+            DocumentReference ref = createRef(clazz, id);
+
+            Future<Long> result = collection.deleteAsync(builder.reset().add(
+                    ref.getId()));
+            while (!pending.offer(result)) {
+                try {
+                    deleted += pending.take().get().longValue();
+                }
+                catch (InterruptedException e) {
+                    throw new MongoDbException(e);
+                }
+                catch (ExecutionException e) {
+                    throw new MongoDbException(e);
+                }
+            }
+        }
+        for (Future<Long> result : pending) {
+            try {
+                deleted += result.get().longValue();
+            }
+            catch (InterruptedException e) {
+                throw new MongoDbException(e);
+            }
+            catch (ExecutionException e) {
+                throw new MongoDbException(e);
+            }
+        }
+
+        return deleted;
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to delete the entity with the specified id.
      * </p>
      */
     @Override
     public <T, V> long delete(final Class<T> clazz, final V id) {
-        // TODO Auto-generated method stub
-        return 0;
+        MongoCollection collection = toCollection(clazz);
+
+        DocumentBuilder builder = BuilderFactory.start();
+        DocumentReference ref = createRef(clazz, id);
+
+        return collection.delete(builder.reset().add(ref.getId()));
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to delete all entities matching the query.
      * </p>
      */
     @Override
     public <T> long delete(final Query<T> query) {
-        // TODO Auto-generated method stub
-        return 0;
+        return delete(query, getDefaultDurability());
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to delete all entities matching the query.
      * </p>
      */
     @Override
     public <T> long delete(final Query<T> query, final Durability durability) {
-        // TODO Auto-generated method stub
-        return 0;
+        MongoCollection collection = toCollection(query.getEntityClass());
+
+        return collection.delete(query, durability);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to delete the entity.
      * </p>
      */
     @Override
     public <T> long delete(final T entity) {
-        // TODO Auto-generated method stub
-        return 0;
+        return delete(entity, getDefaultDurability());
     }
 
     /**
@@ -176,20 +257,25 @@ public class DatastoreImpl implements Datastore {
      */
     @Override
     public <T> long delete(final T entity, final Durability durability) {
-        // TODO Auto-generated method stub
-        return 0;
+        MongoCollection collection = toCollection(entity.getClass());
+
+        DocumentBuilder builder = BuilderFactory.start();
+        DocumentReference ref = createRef(entity);
+
+        return collection.delete(builder.reset().add(ref.getId()), durability);
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Overriden to TODO Finish.
+     * Overriden to do nothing, for now.
      * </p>
+     * 
+     * @todo Implement creation of the capped collections.
      */
     @Override
     public void ensureCaps() {
-        // TODO Auto-generated method stub
-
+        // TODO - Implement creation of the capped collections.
     }
 
     /**

@@ -12,6 +12,7 @@ import javax.validation.ValidatorFactory;
 import com.allanbank.mongodb.bson.builder.DocumentBuilder;
 import com.google.code.morphia.EntityInterceptorAdapter;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.converters.Converter;
 import com.google.code.morphia.mapping.Mapper;
 
 /**

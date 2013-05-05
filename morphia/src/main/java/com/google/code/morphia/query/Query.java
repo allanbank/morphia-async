@@ -5,7 +5,7 @@ import com.allanbank.mongodb.bson.DocumentAssignable;
 /**
  * @author Scott Hernandez
  */
-public interface Query<T> extends QueryResults<T>, Cloneable {
+public interface Query<T> extends QueryResults<T>, Cloneable, DocumentAssignable {
     CriteriaContainer and(Criteria... criteria);
 
     /**

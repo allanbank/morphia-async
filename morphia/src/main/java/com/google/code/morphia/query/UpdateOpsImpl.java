@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.code.morphia.converters.Converter;
 import com.google.code.morphia.state.MappedField;
 
 /**
@@ -17,13 +18,13 @@ import com.google.code.morphia.state.MappedField;
 public class UpdateOpsImpl<T> implements UpdateOperations<T> {
     Class<T> clazz;
     boolean isolated = false;
-    Mapper mapr;
+    Converter converter;
     Map<String, Map<String, Object>> ops = new HashMap<String, Map<String, Object>>();
     boolean validateNames = true;
     boolean validateTypes = true;
 
-    public UpdateOpsImpl(final Class<T> type, final Mapper mapper) {
-        this.mapr = mapper;
+    public UpdateOpsImpl(final Class<T> type, final Converter converter) {
+        this.converter = converter;
         this.clazz = type;
     }
 
